@@ -125,7 +125,7 @@ Only use if automated workflow fails:
 
 ## CI/CD Workflows
 
-- **tests.yml**: Runs `brew test-bot` on push/PR across Ubuntu and macOS (Intel + ARM)
+- **tests.yml**: Two jobs — `syntax` (Ubuntu, runs `--only-tap-syntax` on every PR/push touching `Formula/**` or this workflow) and `formulae` (macos-26, builds bottles for non-draft PRs, gated on `syntax`). Uses sccache + Cargo registry caching for Rust-heavy Python deps (`pydantic-core` etc.).
 - **publish.yml**: Pulls bottles when PR has `pr-pull` label and pushes to main
 - **update-formulas.yml**: Uses `brew livecheck` to check for updates weekly, creates PRs using `brew bump-formula-pr` and `brew update-python-resources`
 - **update-formula-dispatch.yml**: Receives `repository_dispatch` events from package repos to trigger immediate updates
