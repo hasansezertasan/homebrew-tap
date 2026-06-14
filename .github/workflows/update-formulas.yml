@@ -58,7 +58,7 @@ jobs:
               echo "  Update available: $current -> $latest"
 
               # Add to updates array
-              updates_json=$(echo "$updates_json" | jq --arg f "$formula" --arg c "$current" --arg l "$latest" \
+              updates_json=$(echo "$updates_json" | jq -c --arg f "$formula" --arg c "$current" --arg l "$latest" \
                 '. + [{"formula": $f, "current_version": $c, "latest_version": $l}]')
               has_updates="true"
             else
