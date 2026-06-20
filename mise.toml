@@ -4,6 +4,10 @@ actionlint = "latest"
 yamlfmt = "latest"
 yamllint = "latest"
 
+[tasks."add-formula"]
+description = "Scaffold a fully-resourced formula from a PyPI package"
+run = "python3 scripts/add_formula.py"
+
 [tasks."style"]
 description = "Format and lint all YAML files"
 depends = ["style:fix", "style:check"]

@@ -165,6 +165,54 @@ jobs:
                                 Creates PR
 ```
 
+## Adding a New Formula
+
+Use the `add-formula` helper to scaffold a complete, fully-resourced formula from a
+PyPI package in one command. It resolves the entire dependency tree, pins every
+resource to an sdist + sha256, and writes `Formula/<name>.rb` following this tap's
+conventions.
+
+```bash
+# Core install only
+mise run add-formula <package>
+
+# Include optional extras (pin them up front to avoid a second build)
+mise run add-formula <package> --extras tui
+
+# Also audit, build-from-source, and smoke-test the result
+mise run add-formula <package> --extras tui --check
+```
+
+Or call the script directly:
+
+```bash
+python3 scripts/add_formula.py <package> [--extras a,b] [--python python@3.13] \
+    [--version X.Y.Z] [--check]
+```
+
+What it does:
+
+1. Fetches the package's PyPI metadata (latest version, sdist URL + sha256, license,
+   `requires_python`).
+2. Picks a `python@3.x` dependency from `requires_python` (override with `--python`).
+3. Resolves the full dependency tree — including the chosen `--extras` — via a
+   `pip --dry-run` report against the target interpreter, then maps every dependency
+   back to its PyPI **sdist** (source tarball, as Homebrew prefers) with sha256.
+4. Writes `Formula/<name>.rb` with `desc`, `homepage`, `license`, a `livecheck`
+   block, the `python@3.x` dependency, alphabetically-ordered `resource` blocks, and
+   a `--version` smoke test.
+5. With `--check`: copies the formula into the active tap, runs
+   `brew audit --strict --online`, `brew install --build-from-source`, and `brew test`.
+
+Notes:
+
+- **Pin extras up front.** Discovering a missing extra later forces a second
+  build-from-source. Decide the feature set before running.
+- The generated `test do` block assumes the CLI supports `--version`. Verify against
+  the package's CLI and adjust if needed.
+- `--check` builds every dependency from source and is network-bound; omit it for a
+  fast scaffold and let CI (`tests.yml`) build bottles instead.
+
 ## Documentation
 
 `brew help`, `man brew` or check [Homebrew's documentation](https://docs.brew.sh).
