@@ -40,13 +40,17 @@ jobs:
       - run: brew test-bot --only-setup
       - run: brew test-bot --only-tap-syntax
   formulae:
-    name: build-bottle
+    name: build-bottle (${{ matrix.os }})
     needs: syntax
     if: |
       github.event_name == 'pull_request'
       && github.event.pull_request.draft == false
     timeout-minutes: 30
-    runs-on: macos-26
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-26, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
     permissions:
       actions: read
       checks: read
@@ -71,30 +75,34 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
           path: ${{ steps.set-up-homebrew.outputs.gems-path }}
-          key: macos-26-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
-          restore-keys: macos-26-rubygems-
+          key: ${{ matrix.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+          restore-keys: ${{ matrix.os }}-rubygems-
       - name: Cache Homebrew downloads
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
+          # macOS uses ~/Library/Caches/Homebrew, Linux uses ~/.cache/Homebrew;
+          # the cache action ignores paths that do not exist on a given runner.
           path: |
             ~/Library/Caches/Homebrew/downloads
             ~/Library/Caches/Homebrew/api
-          key: macos-26-brew-${{ hashFiles('Formula/*.rb') }}
-          restore-keys: macos-26-brew-
+            ~/.cache/Homebrew/downloads
+            ~/.cache/Homebrew/api
+          key: ${{ matrix.os }}-brew-${{ hashFiles('Formula/*.rb') }}
+          restore-keys: ${{ matrix.os }}-brew-
       - name: Cache Cargo registry
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
           path: |
             ${{ github.workspace }}/.cargo/registry
             ${{ github.workspace }}/.cargo/git
-          key: macos-26-cargo-${{ github.run_id }}
-          restore-keys: macos-26-cargo-
+          key: ${{ matrix.os }}-cargo-${{ github.run_id }}
+          restore-keys: ${{ matrix.os }}-cargo-
       - name: Cache sccache
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
           path: ${{ github.workspace }}/.sccache
-          key: macos-26-sccache-${{ github.run_id }}
-          restore-keys: macos-26-sccache-
+          key: ${{ matrix.os }}-sccache-${{ github.run_id }}
+          restore-keys: ${{ matrix.os }}-sccache-
       - run: brew test-bot --only-cleanup-before
       - run: brew test-bot --only-setup
       - run: brew test-bot --only-formulae
@@ -105,5 +113,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: bottles_macos-26
+          name: bottles_${{ matrix.os }}
           path: "*.bottle.*"
