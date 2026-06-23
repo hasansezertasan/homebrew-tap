@@ -67,7 +67,7 @@ brew create https://files.pythonhosted.org/packages/.../package-x.y.z.tar.gz --p
 # brew create puts it in the wrong location, so you'll need to:
 # - Copy metadata (desc, homepage, license) from the package's PyPI/GitHub page
 # - Add livecheck block for auto-updates
-# - Fix Python version if needed (prefer python@3.13 over newer versions)
+# - Fix Python version if needed (prefer python@3.14, the current default)
 # - Add build dependencies if needed (e.g., Rust for pydantic-core)
 # - Write a proper test command (check package help for correct flags)
 ```
@@ -84,7 +84,7 @@ brew create https://files.pythonhosted.org/packages/.../micoo-0.4.0.tar.gz --pyt
 # - license: "MIT"
 # - livecheck block with strategy :pypi
 # - depends_on "rust" => :build  (if package uses pydantic-core or other Rust deps)
-# - depends_on "python@3.13"  (use stable Python, not bleeding edge)
+# - depends_on "python@3.14"  (current default Python)
 # - All resource blocks from brew create
 # - test do: system bin/"micoo", "version"  (NOT --version!)
 
@@ -105,7 +105,7 @@ brew test micoo
 ### Key Learnings & Gotchas
 
 1. **brew create location**: Creates formula in homebrew-core, not your tap. You need to copy/adapt it.
-2. **Python version**: Use `python@3.13` (stable) not `python@3.14` (too new, missing binary wheels).
+2. **Python version**: Use `python@3.14` (current default). Newer interpreters may lack binary wheels for some deps, forcing source builds — sccache/Cargo caching (see tests.yml) keeps Rust-heavy builds like `pydantic-core` fast across runs.
 3. **Rust dependency**: Packages using `pydantic-core` need `depends_on "rust" => :build`.
 4. **Test commands**: Not all packages support `--version`. Check the package's CLI help first.
 5. **Audit syntax**: Use `brew audit --strict --online <formula-name>` not the file path.
