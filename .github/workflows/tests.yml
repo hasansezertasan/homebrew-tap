@@ -31,7 +31,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Cache Homebrew Bundler RubyGems
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
+        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8  # v6.0.0
         with:
           path: ${{ steps.set-up-homebrew.outputs.gems-path }}
           key: ubuntu-24.04-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
@@ -68,13 +68,13 @@ jobs:
       - name: Install sccache
         run: brew install sccache
       - name: Cache Homebrew Bundler RubyGems
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
+        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8  # v6.0.0
         with:
           path: ${{ steps.set-up-homebrew.outputs.gems-path }}
           key: macos-26-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
           restore-keys: macos-26-rubygems-
       - name: Cache Homebrew downloads
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
+        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8  # v6.0.0
         with:
           path: |
             ~/Library/Caches/Homebrew/downloads
@@ -82,7 +82,7 @@ jobs:
           key: macos-26-brew-${{ hashFiles('Formula/*.rb') }}
           restore-keys: macos-26-brew-
       - name: Cache Cargo registry
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
+        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8  # v6.0.0
         with:
           path: |
             ${{ github.workspace }}/.cargo/registry
@@ -90,7 +90,7 @@ jobs:
           key: macos-26-cargo-${{ github.run_id }}
           restore-keys: macos-26-cargo-
       - name: Cache sccache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
+        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8  # v6.0.0
         with:
           path: ${{ github.workspace }}/.sccache
           key: macos-26-sccache-${{ github.run_id }}
