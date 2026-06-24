@@ -3,8 +3,8 @@ class Micoo < Formula
 
   desc "Easy access to mise-cookbooks"
   homepage "https://github.com/hasansezertasan/micoo"
-  url "https://files.pythonhosted.org/packages/95/1a/950b6f75222329fbf672da9fb013ab6f3df9120564a2814521321dd51f25/micoo-0.5.0.tar.gz"
-  sha256 "6a15e14e14b750d2f04a10433e0ecd09201a2313b02e0e0586ddba29cf102fc2"
+  url "https://files.pythonhosted.org/packages/b3/c2/273c1b2467a957cb7024e6bcc74da5050fc4452630faa51bd3af9c1d7feb/micoo-0.6.0.tar.gz"
+  sha256 "26a4d169581c9e96a51b5405de046c69a1740fb0eb16fb3c2bc8b33e3ae79ac3"
   license "MIT"
 
   livecheck do

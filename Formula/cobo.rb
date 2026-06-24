@@ -3,8 +3,8 @@ class Cobo < Formula
 
   desc "Generic CLI for fetching boilerplate files from configurable git repositories"
   homepage "https://github.com/hasansezertasan/cobo"
-  url "https://files.pythonhosted.org/packages/4e/d0/4bea80dca8e4e623545f0b6c487e2af2e807467e54c260b5b5f3fb97393c/cobo-0.1.0.tar.gz"
-  sha256 "31bf8b04a8a7db6d5d07763a9be2bf98b50cd524386e411dc2db91bce0b608b6"
+  url "https://files.pythonhosted.org/packages/15/a6/078e70256cd9e1c37d6da7677473dbc52da12a5efcb02b4dc8e365ec3bdf/cobo-0.2.0.tar.gz"
+  sha256 "4142bdc59b8741c5fcfc4a2141d7aa2681f8365881f02ec22d696fcdc7f3082e"
   license "MIT"
 
   livecheck do
@@ -17,11 +17,6 @@ class Cobo < Formula
   resource "annotated-doc" do
     url "https://files.pythonhosted.org/packages/57/ba/046ceea27344560984e26a590f90bc7f4a75b06701f653222458922b558c/annotated_doc-0.0.4.tar.gz"
     sha256 "fbcda96e87e9c92ad167c2e53839e57503ecfda18804ea28102353485033faa4"
-  end
-
-  resource "click" do
-    url "https://files.pythonhosted.org/packages/9b/98/518d8e5081007684232226f475082b30087d0f585e8457db087298259f49/click-8.4.1.tar.gz"
-    sha256 "918b5633eddf6b41c32d4f454bf0de810065c74e3f7dbf8ee5452f8be88d3e96"
   end
 
   resource "gitdb" do
@@ -70,8 +65,8 @@ class Cobo < Formula
   end
 
   resource "typer" do
-    url "https://files.pythonhosted.org/packages/e4/51/9aed62104cea109b820bbd6c14245af756112017d309da813ef107d42e7e/typer-0.25.1.tar.gz"
-    sha256 "9616eb8853a09ffeabab1698952f33c6f29ffdbceb4eaeecf571880e8d7664cc"
+    url "https://files.pythonhosted.org/packages/5e/ed/ef06584ccdd5c410df0837951ecd7e15d9a6144ea1bd4c73cecab1a89891/typer-0.26.7.tar.gz"
+    sha256 "e314a34c617e419c091b2830dda3ea1f257134ff593061a8f5b9717ab8dddb3a"
   end
 
   def install
