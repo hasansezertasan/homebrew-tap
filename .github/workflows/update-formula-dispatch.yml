@@ -31,7 +31,7 @@ jobs:
 
           echo "Updating formula: ${formula}"
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@main
       - name: Check for update
         id: check
         run: |

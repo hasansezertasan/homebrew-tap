@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@main
       - name: Check for formula updates
         id: check
         run: |
@@ -77,7 +77,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@main
       - name: Update formulas
         run: |
           updates='${{ needs.check-updates.outputs.updates }}'
@@ -86,21 +86,25 @@ jobs:
             formula=$(echo "$update" | jq -r '.formula')
             latest=$(echo "$update" | jq -r '.latest_version')
 
-            echo "Updating $formula to $latest..."
+            echo "::group::Updating $formula to $latest"
 
-            # Use brew bump-formula-pr to update the formula (without creating PR)
-            # This updates URL, sha256, and can update resources
-            brew bump-formula-pr \
+            # Use brew bump-formula-pr to update the formula (without creating PR).
+            # This rewrites URL + sha256 and, for Python formulae, regenerates the
+            # resource blocks. A single formula failing (e.g. a dependency that no
+            # longer resolves under the pinned Python) must not abort the whole run,
+            # so the failure is downgraded to a warning and the loop continues.
+            if brew bump-formula-pr \
               --no-audit \
               --no-browse \
               --write-only \
               --version="$latest" \
-              "${{ github.repository_owner }}/$(basename "${{ github.repository }}")/${formula}"
+              "${{ github.repository_owner }}/$(basename "${{ github.repository }}")/${formula}"; then
+              echo "Updated $formula to $latest"
+            else
+              echo "::warning::Failed to update $formula to $latest; skipping (see logs above)"
+            fi
 
-            # Update Python resources (may fail for non-Python packages)
-            brew update-python-resources \
-              "${{ github.repository_owner }}/$(basename "${{ github.repository }}")/${formula}" \
-              || echo "Note: update-python-resources failed for $formula (may not be a Python package)"
+            echo "::endgroup::"
           done
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
