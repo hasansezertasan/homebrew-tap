@@ -12,6 +12,9 @@ class Micoo < Formula
     strategy :pypi
   end
 
+  # Upstream archived the project; 0.6.0 is the final release.
+  deprecate! date: "2026-06-23", because: :deprecated_upstream
+
   depends_on "rust" => :build
   depends_on "python@3.14"
 
