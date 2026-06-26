@@ -6,10 +6,12 @@ on:
       - main
     paths:
       - "Formula/**"
+      - "Casks/**"
       - ".github/workflows/tests.yml"
   pull_request:
     paths:
       - "Formula/**"
+      - "Casks/**"
       - ".github/workflows/tests.yml"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

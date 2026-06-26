@@ -125,10 +125,15 @@ Only use if automated workflow fails:
 
 ## CI/CD Workflows
 
-- **tests.yml**: Two jobs — `syntax` (Ubuntu, runs `--only-tap-syntax` on every PR/push touching `Formula/**` or this workflow) and `formulae` (macos-26, builds bottles for non-draft PRs, gated on `syntax`). Uses sccache + Cargo registry caching for Rust-heavy Python deps (`pydantic-core` etc.).
+- **tests.yml**: Two jobs — `syntax` (Ubuntu, runs `--only-tap-syntax` on every PR/push touching `Formula/**`, `Casks/**`, or this workflow; audits both formulae and casks) and `formulae` (macos-26, builds bottles for non-draft PRs, gated on `syntax`). Casks ship pre-built apps, so they get no bottle job — only the syntax audit. Uses sccache + Cargo registry caching for Rust-heavy Python deps (`pydantic-core` etc.).
 - **publish.yml**: Pulls bottles when PR has `pr-pull` label and pushes to main
 - **update-formulas.yml**: Uses `brew livecheck` to check for updates weekly, creates PRs using `brew bump-formula-pr` and `brew update-python-resources`
-- **update-formula-dispatch.yml**: Receives `repository_dispatch` events from package repos to trigger immediate updates
+- **update-casks.yml**: Cask counterpart to update-formulas.yml. Weekly (Mon 9:15 UTC), uses `brew livecheck --cask` + `brew bump-cask-pr` to bump version and recompute sha256. Requires each cask to have a `livecheck` block (e.g. `strategy :github_latest`). This is a **safety net** — see below.
+- **update-formula-dispatch.yml**: Receives `repository_dispatch` (`update-formula`) events from package repos to trigger immediate formula updates
+
+### Cask updates: producer-push, not dispatch
+
+Unlike formulae (which fire a `repository_dispatch` at this tap), the cask source repos push their own bumps. `keycast`'s `release.yml` builds `keycast.dmg` and runs `brew bump-cask-pr --no-fork hasansezertasan/tap/keycast` directly (using a `TAP_TOKEN` PAT with Contents + PR write on this tap). So there is **no** `update-cask-dispatch.yml` receiver. `update-casks.yml`'s weekly cron is the fallback for when that push doesn't happen (missing `TAP_TOKEN`, a release predating the dmg tooling, etc.).
 
 ## Triggering Updates from Package Repos
 

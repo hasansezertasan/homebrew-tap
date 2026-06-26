@@ -7,6 +7,11 @@ cask "keycast" do
   desc "Cross-platform keystroke and mouse click visualizer built in Python"
   homepage "https://github.com/hasansezertasan/keycast"
 
+  livecheck do
+    url :url
+    strategy :github_latest
+  end
+
   app "keycast.app"
 
   caveats <<~EOS
