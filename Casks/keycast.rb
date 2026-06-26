@@ -14,7 +14,7 @@ cask "keycast" do
 
   # The .app is built on macos-15 (see keycast's release.yml), which sets the
   # bundle's effective minimum-macOS floor.
-  depends_on macos: ">= :sequoia"
+  depends_on macos: :sequoia
 
   app "keycast.app"
 
