@@ -134,7 +134,7 @@ Only use if automated workflow fails:
 
 ### Cask updates: dispatch, not producer-push
 
-Both formulae and casks use the same model: the source repo fires a `repository_dispatch` and **this tap does the bump**. Producers only signal — so a new cask producer needs only a token that can fire the dispatch, not Contents/PR write on the tap, and the bump logic lives in one place. `keycast`'s `release.yml` builds `keycast.dmg`, attaches it, then fires `update-cask` at this tap (mirroring how it dispatches its Scoop bucket). The tap verifies inline and opens the PR. The weekly `update-casks.yml` cron is the fallback for a missed dispatch.
+Both formulae and casks use the same model: the source repo fires a `repository_dispatch` and **this tap does the bump**. Producers only signal, and the bump logic lives in one place. A producer's dispatch token (`TAP_TOKEN`) needs **Contents: write** on the tap (`POST /repos/.../dispatches` requires it for fine-grained PATs) but **not Pull requests: write** — the tap opens the PR with its own `GITHUB_TOKEN`. `keycast`'s `release.yml` builds `keycast.dmg`, attaches it, then fires `update-cask` at this tap (mirroring how it dispatches its Scoop bucket). The tap verifies inline and opens the PR. The weekly `update-casks.yml` cron is the fallback for a missed dispatch.
 
 ## Triggering Updates from Package Repos
 

@@ -5,9 +5,10 @@ name: Update Cask (Dispatch)
 # .dmg is attached and the release is un-drafted).
 #
 # All the work happens HERE, not in the producer: the producer only signals.
-# That keeps cask-bump logic in one place as more producers come online, and
-# means each producer needs only a token that can fire this dispatch — no
-# Contents/PR write on the tap.
+# That keeps cask-bump logic in one place as more producers come online. A
+# producer's dispatch token needs Contents: write on the tap (required by the
+# POST /dispatches API for fine-grained PATs) but not Pull requests: write —
+# the tap opens the PR itself with its own GITHUB_TOKEN.
 on:
   repository_dispatch:
     types: [update-cask]
