@@ -125,10 +125,16 @@ Only use if automated workflow fails:
 
 ## CI/CD Workflows
 
-- **tests.yml**: Two jobs — `syntax` (Ubuntu, runs `--only-tap-syntax` on every PR/push touching `Formula/**` or this workflow) and `formulae` (macos-26, builds bottles for non-draft PRs, gated on `syntax`). Uses sccache + Cargo registry caching for Rust-heavy Python deps (`pydantic-core` etc.).
+- **tests.yml**: Three jobs — `syntax` (Ubuntu, `--only-tap-syntax` on PR/push touching `Formula/**`, `Casks/**`, or this workflow), `formulae` (macos-26, builds bottles for non-draft PRs, gated on `syntax`), and `cask-audit` (macos-latest, non-draft PRs, gated on `syntax`). The **cask-audit job is required because `brew audit` skips the cask auditor on Linux** (`next [] if os == :linux`) — so the Ubuntu `syntax` job only runs cask *style*, not the cask auditor. cask-audit runs **offline** (`brew audit --cask --strict`, no `--online`): a bootstrap cask points at an artifact that doesn't exist until the producer's first real release, so the `--online` download check runs at bump time (dispatch/cron) instead. Casks ship pre-built apps, so they get no bottle job. Uses sccache + Cargo registry caching for Rust-heavy Python deps (`pydantic-core` etc.).
 - **publish.yml**: Pulls bottles when PR has `pr-pull` label and pushes to main
 - **update-formulas.yml**: Uses `brew livecheck` to check for updates weekly, creates PRs using `brew bump-formula-pr` and `brew update-python-resources`
-- **update-formula-dispatch.yml**: Receives `repository_dispatch` events from package repos to trigger immediate updates
+- **update-casks.yml**: Cask counterpart to update-formulas.yml. Weekly (Mon 9:15 UTC), uses `brew livecheck --cask` + `brew bump-cask-pr` to bump version and recompute sha256. **Runs on `macos-latest`** (brew rejects cask subcommands on Linux). Audits each bump inline and reverts it on failure, since `GITHUB_TOKEN`-opened PRs don't trigger `tests.yml`. Requires each cask to have a `livecheck` block (e.g. `strategy :github_latest`). This is the **safety net** behind the dispatch path.
+- **update-cask-dispatch.yml**: Cask counterpart to update-formula-dispatch.yml. Receives `repository_dispatch` (`update-cask`) events, payload `{cask, version?}`, then does all the work on the tap: `bump-cask-pr --write-only` → inline `brew audit` → open PR (`GITHUB_TOKEN`). On any failure it opens an issue on **this** tap (`if: failure()`, `issues: write`) — no cross-repo PAT. Runs on `macos-latest`.
+- **update-formula-dispatch.yml**: Receives `repository_dispatch` (`update-formula`) events from package repos to trigger immediate formula updates
+
+### Cask updates: dispatch, not producer-push
+
+Both formulae and casks use the same model: the source repo fires a `repository_dispatch` and **this tap does the bump**. Producers only signal — so a new cask producer needs only a token that can fire the dispatch, not Contents/PR write on the tap, and the bump logic lives in one place. `keycast`'s `release.yml` builds `keycast.dmg`, attaches it, then fires `update-cask` at this tap (mirroring how it dispatches its Scoop bucket). The tap verifies inline and opens the PR. The weekly `update-casks.yml` cron is the fallback for a missed dispatch.
 
 ## Triggering Updates from Package Repos
 

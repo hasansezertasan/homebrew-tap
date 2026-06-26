@@ -7,6 +7,15 @@ cask "keycast" do
   desc "Cross-platform keystroke and mouse click visualizer built in Python"
   homepage "https://github.com/hasansezertasan/keycast"
 
+  livecheck do
+    url :url
+    strategy :github_latest
+  end
+
+  # The .app is built on macos-15 (see keycast's release.yml), which sets the
+  # bundle's effective minimum-macOS floor.
+  depends_on macos: :sequoia
+
   app "keycast.app"
 
   caveats <<~EOS

@@ -6,10 +6,12 @@ on:
       - main
     paths:
       - "Formula/**"
+      - "Casks/**"
       - ".github/workflows/tests.yml"
   pull_request:
     paths:
       - "Formula/**"
+      - "Casks/**"
       - ".github/workflows/tests.yml"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -107,3 +109,42 @@ jobs:
         with:
           name: bottles_macos-26
           path: "*.bottle.*"
+  cask-audit:
+    name: cask-audit
+    needs: syntax
+    if: |
+      github.event_name == 'pull_request'
+      && github.event.pull_request.draft == false
+    timeout-minutes: 15
+    # macOS is REQUIRED: brew audit skips the cask auditor on Linux
+    # (`next [] if os == :linux` in dev-cmd/audit.rb), so the syntax job above
+    # — pinned to Ubuntu — only runs cask *style*, not the cask auditor. This
+    # job provides the actual cask audit coverage.
+    runs-on: macos-latest
+    permissions:
+      actions: read
+      checks: read
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Audit casks
+        run: |
+          tap="${{ github.repository_owner }}/$(basename "${{ github.repository }}")"
+          shopt -s nullglob
+          rc=0
+          for f in "$(brew --repository "$tap")"/Casks/*.rb; do
+            cask=$(basename "$f" .rb)
+            echo "::group::audit $cask"
+            # Offline (no --online): a bootstrap cask points at an artifact that
+            # doesn't exist until the producer's first real release, so --online
+            # can't pass here. The online audit runs at bump time (dispatch/cron)
+            # against the published artifact instead.
+            brew audit --cask --strict "$tap/$cask" || rc=1
+            echo "::endgroup::"
+          done
+          exit $rc
