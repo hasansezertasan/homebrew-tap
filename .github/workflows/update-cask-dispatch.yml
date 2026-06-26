@@ -19,7 +19,7 @@ on:
 jobs:
   update:
     timeout-minutes: 20
-    name: Update ${{ github.event.client_payload.cask }}
+    name: Update cask (dispatch)
     # macOS: bump-cask-pr / livecheck --cask are rejected on Linux.
     runs-on: macos-latest
     permissions:
@@ -29,38 +29,53 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - name: Validate payload
+        # The dispatch payload is attacker-controllable. Read it ONLY through env
+        # (never interpolate ${{ ... }} into the script source, which would let a
+        # value like `keycast"; rm -rf / #` execute), and validate against strict
+        # patterns before any downstream use. Validated values are persisted to
+        # $GITHUB_ENV so later steps consume the sanitized data, not the raw event.
+        env:
+          RAW_CASK: ${{ github.event.client_payload.cask }}
+          RAW_VERSION: ${{ github.event.client_payload.version }}
         run: |
-          cask="${{ github.event.client_payload.cask }}"
-          if [ -z "$cask" ]; then
-            echo "::error::'cask' is required in client_payload"
-            exit 1
+          if [ -z "$RAW_CASK" ]; then
+            echo "::error::'cask' is required in client_payload"; exit 1
           fi
-          if [ ! -f "Casks/${cask}.rb" ]; then
-            echo "::error::Cask '${cask}' not found"
-            exit 1
+          # Homebrew cask token: lowercase alphanumerics and hyphens only.
+          if ! printf '%s' "$RAW_CASK" | grep -qE '^[a-z0-9][a-z0-9-]*$'; then
+            echo "::error::invalid cask token (must match ^[a-z0-9][a-z0-9-]*\$)"; exit 1
           fi
-          echo "Updating cask: ${cask}"
+          # Version is optional; if present, restrict to safe version characters.
+          if [ -n "$RAW_VERSION" ] && ! printf '%s' "$RAW_VERSION" | grep -qE '^[A-Za-z0-9][A-Za-z0-9._+-]*$'; then
+            echo "::error::invalid version (must match ^[A-Za-z0-9][A-Za-z0-9._+-]*\$)"; exit 1
+          fi
+          if [ ! -f "Casks/${RAW_CASK}.rb" ]; then
+            echo "::error::Cask '${RAW_CASK}' not found"; exit 1
+          fi
+          {
+            echo "CASK=$RAW_CASK"
+            echo "VERSION=$RAW_VERSION"
+          } >> "$GITHUB_ENV"
+          echo "Validated cask: $RAW_CASK"
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@main
       - name: Resolve target version
         id: check
         run: |
-          cask="${{ github.event.client_payload.cask }}"
-          provided_version="${{ github.event.client_payload.version }}"
-          tap_name="${{ github.repository_owner }}/$(basename "${{ github.repository }}")"
+          tap="${{ github.repository_owner }}/$(basename "${{ github.repository }}")"
+          ref="${tap}/${CASK}"
 
-          if [ -n "$provided_version" ]; then
-            # Version provided in payload, use it directly
-            echo "version=$provided_version" >> "$GITHUB_OUTPUT"
+          if [ -n "$VERSION" ]; then
+            # Version provided in payload (already validated), use it directly.
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
             echo "has_update=true" >> "$GITHUB_OUTPUT"
-            echo "Using provided version: $provided_version"
+            echo "Using provided version: $VERSION"
           else
-            # Use livecheck to find the latest version
-            livecheck_output=$(brew livecheck --cask --json "${tap_name}/${cask}" 2>/dev/null || echo "[]")
-            is_outdated=$(echo "$livecheck_output" | jq -r '.[0].version.outdated // false')
-
-            if [ "$is_outdated" = "true" ]; then
-              latest=$(echo "$livecheck_output" | jq -r '.[0].version.latest')
+            # No version given: ask livecheck for the latest.
+            out=$(brew livecheck --cask --json "$ref" 2>/dev/null || echo "[]")
+            outdated=$(echo "$out" | jq -r '.[0].version.outdated // false')
+            if [ "$outdated" = "true" ]; then
+              latest=$(echo "$out" | jq -r '.[0].version.latest')
               echo "version=$latest" >> "$GITHUB_OUTPUT"
               echo "has_update=true" >> "$GITHUB_OUTPUT"
               echo "Found update: $latest"
@@ -71,50 +86,51 @@ jobs:
           fi
       - name: Bump and verify
         if: steps.check.outputs.has_update == 'true'
+        env:
+          RESOLVED_VERSION: ${{ steps.check.outputs.version }}
         run: |
-          cask="${{ github.event.client_payload.cask }}"
-          version="${{ steps.check.outputs.version }}"
-          ref="${{ github.repository_owner }}/$(basename "${{ github.repository }}")/${cask}"
+          tap="${{ github.repository_owner }}/$(basename "${{ github.repository }}")"
+          ref="${tap}/${CASK}"
 
-          echo "Bumping $cask to $version..."
+          echo "Bumping $CASK to $RESOLVED_VERSION..."
           # --write-only edits the file in place; no PR/push from brew itself.
           brew bump-cask-pr --no-audit --no-browse --write-only \
-            --version="$version" "$ref"
+            --version="$RESOLVED_VERSION" "$ref"
 
           # The PR is opened with GITHUB_TOKEN and so won't trigger tests.yml.
-          # Audit HERE instead, so the auto-PR is verified inside the run that
-          # creates it. A failure here trips the `if: failure()` issue step.
+          # Audit HERE instead (online, against the published artifact), so the
+          # auto-PR is verified inside the run that creates it. A failure here
+          # trips the `if: failure()` issue step below.
           brew audit --cask --strict --online "$ref"
       - name: Create Pull Request
         if: steps.check.outputs.has_update == 'true'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore(${{ github.event.client_payload.cask }}): update to ${{ steps.check.outputs.version }}"
-          title: "chore(${{ github.event.client_payload.cask }}): update to ${{ steps.check.outputs.version }}"
+          commit-message: "chore(${{ env.CASK }}): update to ${{ steps.check.outputs.version }}"
+          title: "chore(${{ env.CASK }}): update to ${{ steps.check.outputs.version }}"
           body: |
             Automated update triggered by package release.
 
-            - **Cask**: `${{ github.event.client_payload.cask }}`
-            - **Version**: `${{ steps.check.outputs.version }}`
+            - **Cask**: ${{ env.CASK }}
+            - **Version**: ${{ steps.check.outputs.version }}
 
             Bumped and audited (`brew audit --cask --strict --online`) in the
             triggering workflow run.
 
             ---
             *Triggered by repository_dispatch from the cask source repo.*
-          branch: auto-update/cask-${{ github.event.client_payload.cask }}
+          branch: auto-update/cask-${{ env.CASK }}
           delete-branch: true
       - name: Report failure
         # Fire-and-forget dispatch hides failures from the producer, so surface
         # them as an issue on this tap. The owner watches the tap, so this
         # notifies without any cross-repo PAT (GITHUB_TOKEN + issues: write).
+        # CASK/VERSION are read from $GITHUB_ENV (set only if validation passed).
         if: failure()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-          CASK: ${{ github.event.client_payload.cask }}
-          VERSION: ${{ github.event.client_payload.version }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           gh issue create \
