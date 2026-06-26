@@ -120,5 +120,5 @@ jobs:
           gh issue create \
             --title "Cask bump failed: ${CASK:-<unknown>} ${VERSION}" \
             --label "automated,cask-bump-failure" \
-            --body "$(printf 'Automated cask bump triggered by a release dispatch failed.\n\n- **Cask**: `%s`\n- **Version**: `%s`\n- **Run**: %s\n\nThe weekly `update-casks.yml` cron will retry; investigate if it keeps failing.' "${CASK:-<unknown>}" "${VERSION:-<from livecheck>}" "$RUN_URL")" \
+            --body "$(printf 'Automated cask bump triggered by a release dispatch failed.\n\n- Cask: %s\n- Version: %s\n- Run: %s\n\nThe weekly update-casks.yml cron will retry; investigate if it keeps failing.' "${CASK:-<unknown>}" "${VERSION:-<from livecheck>}" "$RUN_URL")" \
             || echo "::warning::could not open failure issue (labels may not exist yet)"
