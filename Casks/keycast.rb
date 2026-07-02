@@ -1,6 +1,6 @@
 cask "keycast" do
-  version "0.0.0"
-  sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  version "0.2.0"
+  sha256 "d0c258bad1f6133c1ef71d672e5797e84d86a20e7900fcc4a64b6ef1491896bb"
 
   url "https://github.com/hasansezertasan/keycast/releases/download/v#{version}/keycast.dmg"
   name "keycast"
