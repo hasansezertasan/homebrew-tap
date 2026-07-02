@@ -12,9 +12,11 @@ cask "keycast" do
     strategy :github_latest
   end
 
-  # The .app is built on macos-15 (see keycast's release.yml), which sets the
-  # bundle's effective minimum-macOS floor.
-  depends_on macos: :sequoia
+  # Match the artifact's declared floor. PyInstaller stamps the .app's
+  # LSMinimumSystemVersion at its default (11.0 / Big Sur) regardless of the
+  # macos-15 build runner, so `brew audit --online` rejects a higher cask floor
+  # as inconsistent with the bundle. keycast has no Sequoia-only requirement.
+  depends_on macos: :big_sur
 
   app "keycast.app"
 
