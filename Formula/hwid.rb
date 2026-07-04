@@ -3,8 +3,8 @@ class Hwid < Formula
 
   desc "Cross-platform hardware ID extraction using native OS detection"
   homepage "https://github.com/hasansezertasan/hwid"
-  url "https://files.pythonhosted.org/packages/72/99/c9ba45037e00f5c1a42c7b3777ac1257c800e30b162ea66439db55e99293/hwid-0.1.0.tar.gz"
-  sha256 "b9aebe2271ede00b406a15617622ecedd8eab079ec9689d3df7f5ca8510a7d2b"
+  url "https://files.pythonhosted.org/packages/d8/09/9db868e4f96fb07566c9fd6003a31501ef340602b4a21bc45978685d63b2/hwid-0.2.0.tar.gz"
+  sha256 "462ac889a0ee302d7c2d3edf50f681c2b868e752c789fb0ee35cb357ccda0d2d"
   license "MIT"
 
   livecheck do
