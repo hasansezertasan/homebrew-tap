@@ -279,13 +279,16 @@ def main() -> None:
         resources.append((normalize(dep_name), url, sha))
     resources.sort(key=lambda r: r[0])
 
-    # Emit build-time deps implied by the resolved tree (e.g. rust for
-    # pydantic-core). CLAUDE.md gotcha #3.
-    build_deps = [
-        _BUILD_DEPS_BY_RESOURCE[res_name]
-        for res_name, _, _ in resources
-        if res_name in _BUILD_DEPS_BY_RESOURCE
-    ]
+    # Emit unique build-time deps implied by the resolved tree (e.g. rust for
+    # pydantic-core). CLAUDE.md gotcha #3. De-duplicate so two resources that
+    # map to the same toolchain don't render duplicate `depends_on` lines.
+    build_deps = sorted(
+        {
+            _BUILD_DEPS_BY_RESOURCE[res_name]
+            for res_name, _, _ in resources
+            if res_name in _BUILD_DEPS_BY_RESOURCE
+        }
+    )
 
     repo = Path(__file__).resolve().parent.parent
     out = repo / "Formula" / f"{name}.rb"
