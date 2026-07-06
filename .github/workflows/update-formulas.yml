@@ -83,7 +83,14 @@ jobs:
   update-formulas:
     timeout-minutes: 20
     name: Update formulas
-    runs-on: ubuntu-latest
+    # macOS runner: brew update-python-resources re-resolves each formula's
+    # dependency tree on the host platform. macOS-only formulae (e.g. keycast,
+    # depends_on :macos) pin macOS backends — pynput's pyobjc frameworks — that
+    # a Linux resolve would incorrectly swap for evdev + python-xlib. Resolving
+    # on macOS is also correct for every other formula, since bottles are built
+    # on macOS. Mirrors update-casks.yml. check-updates stays on ubuntu (the
+    # livecheck-only job doesn't resolve resources).
+    runs-on: macos-latest
     needs: check-updates
     if: needs.check-updates.outputs.has_updates == 'true' && inputs.dry_run != true
     permissions:

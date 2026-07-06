@@ -99,6 +99,22 @@ def min_python(requires_python: str | None) -> str | None:
     return f"3.{min(int(m) for m in matches)}"
 
 
+def max_python(requires_python: str | None) -> str | None:
+    """Highest ``3.x`` series allowed by an upper bound, or None if unbounded.
+
+    Returns the newest ``3.x`` that still satisfies a ``<`` / ``<=`` clause:
+    ``<3.14`` -> ``3.13``, ``<=3.12`` -> ``3.12``. Major-version caps like
+    ``<4`` don't restrict any ``3.x`` and are ignored.
+    """
+    if not requires_python:
+        return None
+    cap: int | None = None
+    for op, minor in re.findall(r"(<=?)\s*3\.(\d+)", requires_python):
+        allowed = int(minor) if op == "<=" else int(minor) - 1
+        cap = allowed if cap is None else min(cap, allowed)
+    return f"3.{cap}" if cap is not None else None
+
+
 def _series_tuple(series: str) -> tuple[int, ...]:
     """Parse a ``3.x`` series into a comparable integer tuple."""
     return tuple(int(part) for part in series.split("."))
@@ -256,14 +272,22 @@ def main() -> None:
         series = args.python.split("@", 1)[1]
     else:
         # Default to the tap's current interpreter, but honor a package whose
-        # requires_python floor is newer than the default.
+        # requires_python floor is newer than the default, or whose upper bound
+        # excludes the default (e.g. ">=3.10,<3.14" can't use python@3.14).
+        requires_python = info.get("requires_python")
         series = DEFAULT_PYTHON_SERIES
-        floor = min_python(info.get("requires_python"))
+        floor = min_python(requires_python)
+        cap = max_python(requires_python)
         if floor and _series_tuple(floor) > _series_tuple(DEFAULT_PYTHON_SERIES):
             print(f"warning: {name} requires Python >= {floor}; using python@"
                   f"{floor} instead of the default python@{DEFAULT_PYTHON_SERIES}",
                   file=sys.stderr)
             series = floor
+        elif cap and _series_tuple(cap) < _series_tuple(DEFAULT_PYTHON_SERIES):
+            print(f"warning: {name} ({requires_python}) excludes python@"
+                  f"{DEFAULT_PYTHON_SERIES}; using python@{cap} instead",
+                  file=sys.stderr)
+            series = cap
     python_formula, interpreter = brew_python(series)
 
     requirement = f"{args.package}=={version}"
