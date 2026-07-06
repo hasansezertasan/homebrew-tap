@@ -22,6 +22,15 @@ from pathlib import Path
 
 PYPI = "https://pypi.org/pypi"
 
+# Tap convention: package against the current default interpreter unless the
+# target package's requires_python floor is newer. See CLAUDE.md.
+DEFAULT_PYTHON_SERIES = "3.14"
+
+# Packages whose presence in the resolved tree implies a build-time toolchain.
+_BUILD_DEPS_BY_RESOURCE = {
+    "pydantic-core": '"rust" => :build',
+}
+
 # Minimal SPDX mapping for the common "License :: OSI Approved :: ..." classifiers.
 _LICENSE_BY_CLASSIFIER = {
     "MIT License": "MIT",
@@ -90,6 +99,11 @@ def min_python(requires_python: str | None) -> str | None:
     return f"3.{min(int(m) for m in matches)}"
 
 
+def _series_tuple(series: str) -> tuple[int, ...]:
+    """Parse a ``3.x`` series into a comparable integer tuple."""
+    return tuple(int(part) for part in series.split("."))
+
+
 def brew_python(series: str) -> tuple[str, str]:
     """Return the ``python@3.x`` formula name and its interpreter path.
 
@@ -133,13 +147,18 @@ def sdist_for(name: str, version: str) -> tuple[str, str, bool]:
     for entry in payload["urls"]:
         if entry["packagetype"] == "sdist":
             return entry["url"], entry["digests"]["sha256"], True
-    # Wheel-only release: fall back to the first wheel so the formula still resolves.
+    # Wheel-only release: fall back to the first wheel so the formula still
+    # resolves. Name the file so the user can spot a platform-specific wheel
+    # (e.g. a manylinux/macOS-arm64 tag) that won't build cross-platform.
     entry = payload["urls"][0]
+    print(f"warning: {name} {version} has no sdist; using wheel "
+          f"{entry['filename']}", file=sys.stderr)
     return entry["url"], entry["digests"]["sha256"], False
 
 
 def render(name: str, info: dict, sdist_url: str, sdist_sha: str,
-           python_formula: str, resources: list[tuple[str, str, str]]) -> str:
+           python_formula: str, resources: list[tuple[str, str, str]],
+           build_deps: list[str]) -> str:
     """Render the Ruby formula source."""
     homepage = (info.get("project_urls") or {}).get("Homepage") \
         or info.get("home_page") or f"https://pypi.org/project/{name}/"
@@ -158,6 +177,11 @@ def render(name: str, info: dict, sdist_url: str, sdist_sha: str,
         "    strategy :pypi",
         "  end",
         "",
+    ]
+    # Build dependencies must precede runtime deps (see CLAUDE.md gotcha #6).
+    for dep in build_deps:
+        lines.append(f"  depends_on {dep}")
+    lines += [
         f'  depends_on "{python_formula}"',
         "",
     ]
@@ -226,19 +250,21 @@ def main() -> None:
     info = release["info"]
     name = normalize(info["name"])
     version = info["version"]
-    sdist_url, sdist_sha, ok = sdist_for(info["name"], version)
-    if not ok:
-        print(f"warning: {name} {version} has no sdist; using a wheel URL",
-              file=sys.stderr)
+    sdist_url, sdist_sha, _ = sdist_for(info["name"], version)
 
-    series = min_python(info.get("requires_python"))
     if args.python:
-        python_formula, interpreter = args.python, brew_python(
-            args.python.split("@", 1)[1])[1]
-    elif series:
-        python_formula, interpreter = brew_python(series)
+        series = args.python.split("@", 1)[1]
     else:
-        sys.exit("error: could not infer Python version; pass --python python@3.x")
+        # Default to the tap's current interpreter, but honor a package whose
+        # requires_python floor is newer than the default.
+        series = DEFAULT_PYTHON_SERIES
+        floor = min_python(info.get("requires_python"))
+        if floor and _series_tuple(floor) > _series_tuple(DEFAULT_PYTHON_SERIES):
+            print(f"warning: {name} requires Python >= {floor}; using python@"
+                  f"{floor} instead of the default python@{DEFAULT_PYTHON_SERIES}",
+                  file=sys.stderr)
+            series = floor
+    python_formula, interpreter = brew_python(series)
 
     requirement = f"{args.package}=={version}"
     if args.extras:
@@ -249,16 +275,23 @@ def main() -> None:
     for dep_name, dep_version in resolve_tree(interpreter, requirement):
         if normalize(dep_name) == name:
             continue
-        url, sha, dep_ok = sdist_for(dep_name, dep_version)
-        if not dep_ok:
-            print(f"warning: {dep_name} {dep_version} has no sdist; using a wheel",
-                  file=sys.stderr)
+        url, sha, _ = sdist_for(dep_name, dep_version)
         resources.append((normalize(dep_name), url, sha))
     resources.sort(key=lambda r: r[0])
 
+    # Emit build-time deps implied by the resolved tree (e.g. rust for
+    # pydantic-core). CLAUDE.md gotcha #3.
+    build_deps = [
+        _BUILD_DEPS_BY_RESOURCE[res_name]
+        for res_name, _, _ in resources
+        if res_name in _BUILD_DEPS_BY_RESOURCE
+    ]
+
     repo = Path(__file__).resolve().parent.parent
     out = repo / "Formula" / f"{name}.rb"
-    out.write_text(render(name, info, sdist_url, sdist_sha, python_formula, resources))
+    out.write_text(
+        render(name, info, sdist_url, sdist_sha, python_formula, resources,
+               build_deps))
     print(f"==> Wrote {out.relative_to(repo)} "
           f"({len(resources)} resources, {python_formula})")
 
