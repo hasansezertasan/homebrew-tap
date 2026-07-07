@@ -14,9 +14,12 @@ class Keycast < Formula
 
   depends_on "rust" => :build
 
-  # python-xlib 0.33 (pynput's Linux backend) imports pkg_resources in its
-  # setup.py, which setuptools 82 no longer provides, so it cannot build on
-  # python@3.14. Restrict to macOS until that is resolved upstream.
+  # keycast is packaged for macOS only. pynput's Linux backends don't build on
+  # python@3.14 (python-xlib 0.33 imports pkg_resources, which setuptools 82 no
+  # longer provides; evdev needs Linux kernel headers), so the resources below
+  # pin pynput's *macOS* backend — the pyobjc frameworks — instead. The tree was
+  # resolved on macOS; a Linux resolve would (incorrectly) swap these for
+  # evdev + python-xlib.
   depends_on :macos
 
   depends_on "python-tk@3.14"
@@ -30,11 +33,6 @@ class Keycast < Formula
   resource "annotated-types" do
     url "https://files.pythonhosted.org/packages/ee/67/531ea369ba64dcff5ec9c3402f9f51bf748cec26dde048a2f973a4eea7f5/annotated_types-0.7.0.tar.gz"
     sha256 "aff07c09a53a08bc8cfccb9c85b05f1aa9a2a6f23728d790723543408344ce89"
-  end
-
-  resource "evdev" do
-    url "https://files.pythonhosted.org/packages/a5/f5/397b61091120a9ca5001041dd7bf76c385b3bfd67a0e5bcb74b852bd22a4/evdev-1.9.3.tar.gz"
-    sha256 "2c140e01ac8437758fa23fe5c871397412461f42d421aa20241dc8fe8cfccbc9"
   end
 
   resource "markdown-it-py" do
@@ -82,14 +80,34 @@ class Keycast < Formula
     sha256 "f493c87157cd3861b4468f7f896857051762f44ed26f1b641e7cc5840a457087"
   end
 
+  resource "pyobjc-core" do
+    url "https://files.pythonhosted.org/packages/b4/b1/729f7458a63758bd21716648a8abcd9a0c8f2d2e9897763c8a1a1c7fd31b/pyobjc_core-12.2.1.tar.gz"
+    sha256 "7a7b9b018402342cf32bf1956366896350fbe5c0478cb3ef59778f77abed7f07"
+  end
+
+  resource "pyobjc-framework-applicationservices" do
+    url "https://files.pythonhosted.org/packages/5e/4d/0ebdd8144aba94b8fe9828ccee5616a4bf53d1f8bc51cff55f3cce86d695/pyobjc_framework_applicationservices-12.2.1.tar.gz"
+    sha256 "048ea663c9ac75c44a15dc7d5b8d78cbb4c97bf1c76e83835e8d5498e184001f"
+  end
+
+  resource "pyobjc-framework-cocoa" do
+    url "https://files.pythonhosted.org/packages/51/34/fbe38a204643aa4e1b91391cdce07a34da565a69171ebcad08de7438a556/pyobjc_framework_cocoa-12.2.1.tar.gz"
+    sha256 "b94b37fe5730e5ae1fb0052912cd174e6ec329b0bfba4a012ae5db1014b5864b"
+  end
+
+  resource "pyobjc-framework-coretext" do
+    url "https://files.pythonhosted.org/packages/5a/9c/4c7f452059dc1d3845b8e627b9113c247a997b9b07518e848c2ab7ff3149/pyobjc_framework_coretext-12.2.1.tar.gz"
+    sha256 "af740e784d7c592c34025ec7165f4f6c1a69b5a2d9075f06e41e4f77c212aed2"
+  end
+
+  resource "pyobjc-framework-quartz" do
+    url "https://files.pythonhosted.org/packages/3b/f6/2a8b84dbf1fe7c04dd96ea73d991678d4e09a909f51971ecc51629bb2ab4/pyobjc_framework_quartz-12.2.1.tar.gz"
+    sha256 "b3b8b6f71e66147f8ff9e6213864cc8527e3a0b1ee90835b93ce221f4802d9b0"
+  end
+
   resource "python-dotenv" do
     url "https://files.pythonhosted.org/packages/82/ed/0301aeeac3e5353ef3d94b6ec08bbcabd04a72018415dcb29e588514bba8/python_dotenv-1.2.2.tar.gz"
     sha256 "2c371a91fbd7ba082c2c1dc1f8bf89ca22564a087c2c287cd9b662adde799cf3"
-  end
-
-  resource "python-xlib" do
-    url "https://files.pythonhosted.org/packages/86/f5/8c0653e5bb54e0cbdfe27bf32d41f27bc4e12faa8742778c17f2a71be2c0/python-xlib-0.33.tar.gz"
-    sha256 "55af7906a2c75ce6cb280a584776080602444f75815a7aff4d287bb2d7018b32"
   end
 
   resource "rich" do

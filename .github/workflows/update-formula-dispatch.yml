@@ -13,7 +13,11 @@ jobs:
   update:
     timeout-minutes: 20
     name: Update formula (dispatch)
-    runs-on: ubuntu-latest
+    # macOS runner: brew update-python-resources re-resolves the tree on the
+    # host platform, so a macOS-only formula (depends_on :macos, e.g. keycast)
+    # must be resolved on macOS or its macOS backends get swapped for Linux ones.
+    # Matches update-formulas.yml and both cask workflows.
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - name: Validate payload
@@ -95,6 +99,12 @@ jobs:
           # Update Python resources (may fail for non-Python packages)
           brew update-python-resources "$ref" \
             || echo "Note: update-python-resources failed for $FORMULA (may not be a Python package)"
+
+          # The PR is opened with GITHUB_TOKEN and so won't trigger tests.yml.
+          # Audit HERE instead so the auto-PR is verified inside the run that
+          # creates it (mirrors update-cask-dispatch.yml). A failure fails the
+          # job, so no unverified PR is opened.
+          brew audit --strict --online "$ref"
       - name: Create Pull Request
         if: steps.check.outputs.has_update == 'true'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1

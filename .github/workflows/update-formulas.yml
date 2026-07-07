@@ -29,10 +29,15 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@main
       - name: Check for formula updates
         id: check
+        # Read the workflow_dispatch input through env (never interpolate
+        # ${{ ... }} into the script body) to match the dispatch receivers'
+        # injection-safe handling.
+        env:
+          INPUT_FORMULA: ${{ inputs.formula }}
         run: |
           # Get list of formulas to check
-          if [ -n "${{ inputs.formula }}" ]; then
-            formulas="${{ inputs.formula }}"
+          if [ -n "$INPUT_FORMULA" ]; then
+            formulas="$INPUT_FORMULA"
           else
             formulas=$(find Formula -name '*.rb' -exec basename {} .rb \; | tr '\n' ' ')
           fi
@@ -44,6 +49,13 @@ jobs:
           has_updates="false"
 
           for formula in $formulas; do
+            # Skip deprecated/disabled formulae: upstream is frozen, so livecheck
+            # only adds noise (and any "update" would be spurious).
+            if grep -qE '^\s*(deprecate|disable)!' "Formula/${formula}.rb" 2>/dev/null; then
+              echo "Skipping $formula (deprecated/disabled)"
+              continue
+            fi
+
             echo "Checking $formula..."
 
             # Run livecheck and capture output
@@ -71,7 +83,14 @@ jobs:
   update-formulas:
     timeout-minutes: 20
     name: Update formulas
-    runs-on: ubuntu-latest
+    # macOS runner: brew update-python-resources re-resolves each formula's
+    # dependency tree on the host platform. macOS-only formulae (e.g. keycast,
+    # depends_on :macos) pin macOS backends — pynput's pyobjc frameworks — that
+    # a Linux resolve would incorrectly swap for evdev + python-xlib. Resolving
+    # on macOS is also correct for every other formula, since bottles are built
+    # on macOS. Mirrors update-casks.yml. check-updates stays on ubuntu (the
+    # livecheck-only job doesn't resolve resources).
+    runs-on: macos-latest
     needs: check-updates
     if: needs.check-updates.outputs.has_updates == 'true' && inputs.dry_run != true
     permissions:
@@ -91,18 +110,26 @@ jobs:
 
             echo "::group::Updating $formula to $latest"
 
-            # Use brew bump-formula-pr to update the formula (without creating PR).
-            # This rewrites URL + sha256 and, for Python formulae, regenerates the
-            # resource blocks. A single formula failing (e.g. a dependency that no
-            # longer resolves under the pinned Python) must not abort the whole run,
-            # so the failure is downgraded to a warning and the loop continues.
-            if brew bump-formula-pr \
-              --no-audit \
-              --no-browse \
-              --write-only \
-              --version="$latest" \
-              "${{ github.repository_owner }}/$(basename "${{ github.repository }}")/${formula}"; then
-              echo "Updated $formula to $latest"
+            ref="${{ github.repository_owner }}/$(basename "${{ github.repository }}")/${formula}"
+
+            # bump-formula-pr rewrites URL + sha256; update-python-resources then
+            # regenerates the resource blocks (bump alone does NOT touch them).
+            #
+            # PRs opened with GITHUB_TOKEN don't trigger tests.yml, so — as in the
+            # cask workflows — verify the bump inline with `brew audit` and revert
+            # the file if it fails, so a bad bump is excluded from the PR rather
+            # than shipped unverified. A single formula failing must not abort the
+            # whole run, so failures are downgraded to warnings.
+            if brew bump-formula-pr --no-audit --no-browse --write-only \
+              --version="$latest" "$ref"; then
+              brew update-python-resources "$ref" \
+                || echo "::warning::update-python-resources failed for $formula"
+              if brew audit --strict --online "$ref"; then
+                echo "Updated $formula to $latest"
+              else
+                echo "::warning::$formula bumped to $latest but failed audit; reverting"
+                git checkout -- "Formula/${formula}.rb"
+              fi
             else
               echo "::warning::Failed to update $formula to $latest; skipping (see logs above)"
             fi

@@ -13,6 +13,13 @@ tap "hasansezertasan/tap"
 brew "<formula>"
 ```
 
+> **Note on `keycast`:** it ships as **both** a formula (the Python CLI, macOS
+> only) and a cask (the prebuilt `.app`), so `brew install keycast` is ambiguous.
+> Disambiguate explicitly:
+>
+> - `brew install --formula hasansezertasan/tap/keycast` — the command-line tool
+> - `brew install --cask hasansezertasan/tap/keycast` — the GUI app bundle
+
 ## Automated Formula Updates
 
 This tap uses two complementary workflows to keep formulas up-to-date:
@@ -55,7 +62,9 @@ Copy and paste this prompt into your AI coding assistant:
 
 ##### Option B: Manual Setup
 
-1. Create a PAT with `repo` scope and write access to this repo
+1. Create a **fine-grained** PAT scoped to this tap repo with **Contents: write**
+   (the only permission `POST /repos/.../dispatches` requires — the tap opens
+   the PR with its own `GITHUB_TOKEN`, so Pull requests: write is *not* needed)
 2. Add it as `HOMEBREW_TAP_TOKEN` secret in the package repo
 3. Copy the workflow below to your package repo at `.github/workflows/update-homebrew-formula.yml`
 
@@ -103,7 +112,9 @@ jobs:
 
 **Prerequisites:**
 
-- A GitHub PAT with `repo` scope stored as `HOMEBREW_TAP_TOKEN` in the repository secrets
+- A GitHub fine-grained PAT scoped to the tap repo with **Contents: write**
+  (not the broad classic `repo` scope; Pull requests: write is not needed),
+  stored as `HOMEBREW_TAP_TOKEN` in the repository secrets
 
 **Instructions:**
 

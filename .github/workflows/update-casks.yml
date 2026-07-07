@@ -30,10 +30,15 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@main
       - name: Check for cask updates
         id: check
+        # Read the workflow_dispatch input through env (never interpolate
+        # ${{ ... }} into the script body) to match the dispatch receivers'
+        # injection-safe handling.
+        env:
+          INPUT_CASK: ${{ inputs.cask }}
         run: |
           # Get list of casks to check
-          if [ -n "${{ inputs.cask }}" ]; then
-            casks="${{ inputs.cask }}"
+          if [ -n "$INPUT_CASK" ]; then
+            casks="$INPUT_CASK"
           else
             casks=$(find Casks -name '*.rb' -exec basename {} .rb \; | tr '\n' ' ')
           fi
