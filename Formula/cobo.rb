@@ -3,8 +3,8 @@ class Cobo < Formula
 
   desc "Generic CLI for fetching boilerplate files from configurable git repositories"
   homepage "https://github.com/hasansezertasan/cobo"
-  url "https://files.pythonhosted.org/packages/15/a6/078e70256cd9e1c37d6da7677473dbc52da12a5efcb02b4dc8e365ec3bdf/cobo-0.2.0.tar.gz"
-  sha256 "4142bdc59b8741c5fcfc4a2141d7aa2681f8365881f02ec22d696fcdc7f3082e"
+  url "https://files.pythonhosted.org/packages/a8/f3/c804a2958e979a2e43e5c2db2fad81a7fa5242589533a85059167b7c2271/cobo-0.3.0.tar.gz"
+  sha256 "cee14538e14eb7dbf85361e0e9fa4872565d5ff4dc579f7d2faebcb184344b55"
   license "MIT"
 
   livecheck do
