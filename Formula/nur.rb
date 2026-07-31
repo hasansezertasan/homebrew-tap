@@ -90,6 +90,6 @@ class Nur < Formula
   end
 
   test do
-    system bin/"nur", "--version"
+    assert_match version.to_s, shell_output("#{bin}/nur --version")
   end
 end
