@@ -224,6 +224,46 @@ Notes:
 - `--check` builds every dependency from source and is network-bound; omit it for a
   fast scaffold and let CI (`tests.yml`) build bottles instead.
 
+## Adding a New Cask
+
+Use the `add-cask` helper to scaffold a cask for a prebuilt macOS app (a `.dmg`,
+`.pkg`, or `.zip` on GitHub Releases). Casks ship a pre-built app, so — unlike a
+formula — there are no Python resources to resolve.
+
+```bash
+# From the latest GitHub release (downloads the artifact to compute sha256)
+GITHUB_TOKEN=$(gh auth token) mise run add-cask owner/repo
+
+# Seed a placeholder before the first release exists (the first
+# `brew bump-cask-pr` fills in the real version and sha256)
+mise run add-cask owner/repo --seed
+```
+
+Or call the script directly:
+
+```bash
+python3 scripts/add_cask.py owner/repo [--artifact NAME.dmg] [--name token] [--seed]
+```
+
+What it does:
+
+1. Reads the repo metadata and its latest release from the GitHub API (set
+   `GITHUB_TOKEN` to avoid rate limits).
+2. Picks a `.dmg`/`.pkg`/`.zip` asset (override with `--artifact`), downloads it, and
+   computes its sha256.
+3. Writes `Casks/<name>.rb` with a version-templated download URL, a `github_latest`
+   `livecheck` block, `depends_on :macos`, and an `app`/`pkg` stanza.
+
+Notes:
+
+- **Verify the `app "<name>.app"` stanza.** The `.app` name inside a `.dmg` is a guess;
+  confirm the real bundle name.
+- If `brew audit --online` reports the cask's macOS floor is higher than the bundle's
+  `LSMinimumSystemVersion`, pin it explicitly (e.g. `depends_on macos: :big_sur`).
+- Add a `caveats` block if the app needs permissions or Gatekeeper approval.
+
+Audit with `brew audit --cask --strict --online hasansezertasan/tap/<name>`.
+
 ## Documentation
 
 `brew help`, `man brew` or check [Homebrew's documentation](https://docs.brew.sh).
