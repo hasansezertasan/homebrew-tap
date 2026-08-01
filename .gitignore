@@ -310,6 +310,9 @@ __marimo__/
 *.gem
 *.rbc
 /.config
+# ...except tooling config intentionally tracked here (repo-root declutter)
+!/.config/
+!/.config/*
 /coverage/
 /InstalledFiles
 /pkg/
