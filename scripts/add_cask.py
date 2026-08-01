@@ -92,9 +92,17 @@ def select_asset(assets: list[dict], wanted: str | None) -> dict:
         names = ", ".join(a["name"] for a in assets)
         sys.exit(f"error: no asset named {wanted!r}; available: {names}")
     for suffix in _ARTIFACT_PREFERENCE:
-        for asset in assets:
-            if asset["name"].endswith(suffix):
-                return asset
+        matches = [a for a in assets if a["name"].endswith(suffix)]
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            # Multiple candidates of the same type usually means per-architecture
+            # builds (e.g. App-arm64.dmg vs App-x64.dmg). One cask can't serve both
+            # from a single url/sha, so make the choice explicit instead of guessing.
+            names = ", ".join(a["name"] for a in matches)
+            sys.exit(f"error: multiple {suffix} assets ({names}); pass --artifact to "
+                     "pick one. Per-architecture builds need a hand-written cask with "
+                     "`on_arm`/`on_intel` blocks, which this scaffolder does not emit")
     sys.exit("error: no .dmg/.pkg/.zip asset found; pass --artifact to choose one of: "
              + ", ".join(a["name"] for a in assets))
 
@@ -110,35 +118,55 @@ def sha256_of(url: str) -> str:
 
 
 def templatize(text: str, version: str) -> str:
-    """Replace literal occurrences of the version in a URL/filename with ``#{version}``."""
-    return text.replace(version, "#{version}") if version else text
+    """Replace literal occurrences of the version in a URL/filename with ``#{version}``.
+
+    Warns when the version is absent: that URL segment then stays hard-coded and
+    ``brew bump-cask-pr``/livecheck can't bump it on the next release.
+    """
+    if not version:
+        return text
+    if version not in text:
+        print(f"warning: version {version!r} not found in {text!r}; that part of the "
+              "URL won't auto-update on release bumps — verify the cask", file=sys.stderr)
+    return text.replace(version, "#{version}")
 
 
-def stanza_for(artifact: str, token: str) -> tuple[str, str]:
+def _rb_str(value: str) -> str:
+    """Escape a value for a double-quoted Ruby string literal in the generated cask.
+
+    Cask files are Ruby evaluated by ``brew audit``/``install``; an unescaped quote
+    or backslash from GitHub-supplied metadata (desc, homepage, tag) would otherwise
+    break out of the string literal.
+    """
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def stanza_for(stanza_artifact: str, artifact: str, token: str) -> tuple[str, str]:
     """Return the artifact stanza line and a verify-hint for the given asset.
 
-    A ``.pkg`` installs via a ``pkg`` stanza. A ``.dmg``/``.zip`` carries a ``.app``
-    bundle whose real name we can't know without mounting it, so we guess
-    ``<token>.app`` and flag it for manual verification.
+    ``stanza_artifact`` is the (version-templated) filename that matches the URL. A
+    ``.pkg`` installs via a ``pkg`` stanza pinned to that templated name. A
+    ``.dmg``/``.zip`` carries a ``.app`` bundle whose real name we can't know without
+    unpacking it, so we guess ``<token>.app`` and flag it for verification.
     """
     if artifact.endswith(".pkg"):
-        return f'  pkg "{artifact}"', ""
-    return (f'  app "{token}.app"',
+        return f'  pkg "{_rb_str(stanza_artifact)}"', ""
+    return (f'  app "{_rb_str(token)}.app"',
             f'the .app name inside {artifact} is a guess ("{token}.app") — verify it')
 
 
-def render(token: str, owner: str, repo: str, version: str, sha: str,
+def render(token: str, repo: str, version: str, sha: str,
            url_template: str, desc: str, homepage: str, stanza: str) -> str:
     """Render the Ruby cask source."""
     return "\n".join([
-        f'cask "{token}" do',
-        f'  version "{version}"',
-        f'  sha256 "{sha}"',
+        f'cask "{_rb_str(token)}" do',
+        f'  version "{_rb_str(version)}"',
+        f'  sha256 "{_rb_str(sha)}"',
         "",
-        f'  url "{url_template}"',
-        f'  name "{repo}"',
-        f'  desc "{desc}"',
-        f'  homepage "{homepage}"',
+        f'  url "{_rb_str(url_template)}"',
+        f'  name "{_rb_str(repo)}"',
+        f'  desc "{_rb_str(desc)}"',
+        f'  homepage "{_rb_str(homepage)}"',
         "",
         "  livecheck do",
         "    url :url",
@@ -171,18 +199,32 @@ def main() -> None:
 
     owner, repo = parse_repo(args.repo)
     token = normalize(args.name or repo)
-    meta = fetch_json(f"{GITHUB_API}/repos/{owner}/{repo}")
+    # `token` becomes a path segment below; an absolute-looking `--name` would make
+    # pathlib's `/` discard the Casks/ prefix and write outside the tap.
+    if "/" in token or "\\" in token:
+        sys.exit(f"error: --name {args.name!r} must not contain path separators")
+    try:
+        meta = fetch_json(f"{GITHUB_API}/repos/{owner}/{repo}")
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            sys.exit(f"error: repo {owner}/{repo} not found")
+        raise
     desc = clean_desc(meta.get("description") or "TODO-set-description")
     homepage = meta.get("html_url") or f"https://github.com/{owner}/{repo}"
 
     if args.seed:
-        # No release required: template a plausible URL the first bump will correct.
+        # No release to introspect: assume this tap's common conventions (a `v<version>`
+        # tag and a static artifact name) and template a URL the first bump can correct.
         artifact = args.artifact or f"{token}.dmg"
         version, sha = _PLACEHOLDER_VERSION, _PLACEHOLDER_SHA
+        stanza_artifact = artifact
         url_template = (f"https://github.com/{owner}/{repo}/releases/download/"
                         f"v#{{version}}/{artifact}")
-        print(f"==> Seeding placeholder cask (version {version}); the first "
-              "`brew bump-cask-pr` fills real values", file=sys.stderr)
+        print("==> Seeding placeholder cask. VERIFY these guessed URL conventions "
+              "against the first real release (edit the cask if they differ):\n"
+              f"      tag pattern: v#{{version}}   artifact: {artifact}\n"
+              "    The first `brew bump-cask-pr` only refreshes version + sha256 from "
+              "this URL; it can't fix a wrong tag/filename pattern.", file=sys.stderr)
     else:
         try:
             release = fetch_json(f"{GITHUB_API}/repos/{owner}/{repo}/releases/latest")
@@ -198,16 +240,18 @@ def main() -> None:
         artifact = asset["name"]
         sha = sha256_of(asset["browser_download_url"])
         # Rebuild the URL from the tag + filename, templated on the version so
-        # `brew bump-cask-pr` (and livecheck) can bump it in place.
+        # `brew bump-cask-pr` (and livecheck) can bump it in place. Reuse the same
+        # templated filename in the pkg stanza so it tracks the URL across bumps.
+        stanza_artifact = templatize(artifact, version)
         url_template = (f"https://github.com/{owner}/{repo}/releases/download/"
-                        f"{templatize(tag, version)}/{templatize(artifact, version)}")
+                        f"{templatize(tag, version)}/{stanza_artifact}")
 
-    stanza, hint = stanza_for(artifact, token)
+    stanza, hint = stanza_for(stanza_artifact, artifact, token)
 
     repo_root = Path(__file__).resolve().parent.parent
     out = repo_root / "Casks" / f"{token}.rb"
     out.parent.mkdir(exist_ok=True)
-    out.write_text(render(token, owner, repo, version, sha, url_template, desc,
+    out.write_text(render(token, repo, version, sha, url_template, desc,
                           homepage, stanza))
     print(f"==> Wrote {out.relative_to(repo_root)} (version {version})")
     if hint:

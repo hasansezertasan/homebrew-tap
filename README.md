@@ -242,7 +242,7 @@ mise run add-cask owner/repo --seed
 Or call the script directly:
 
 ```bash
-python3 scripts/add_cask.py owner/repo [--artifact NAME.dmg] [--name token] [--seed]
+python3 scripts/add_cask.py owner/repo [--artifact NAME.dmg|.pkg|.zip] [--name token] [--seed]
 ```
 
 What it does:
@@ -256,8 +256,8 @@ What it does:
 
 Notes:
 
-- **Verify the `app "<name>.app"` stanza.** The `.app` name inside a `.dmg` is a guess;
-  confirm the real bundle name.
+- **Verify the `app "<name>.app"` stanza.** The `.app` name inside a `.dmg` or `.zip`
+  is a guess; confirm the real bundle name.
 - If `brew audit --online` reports the cask's macOS floor is higher than the bundle's
   `LSMinimumSystemVersion`, pin it explicitly (e.g. `depends_on macos: :big_sur`).
 - Add a `caveats` block if the app needs permissions or Gatekeeper approval.

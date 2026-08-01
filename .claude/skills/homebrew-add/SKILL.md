@@ -60,8 +60,8 @@ sha) that the first `brew bump-cask-pr` fills — use it to seed a cask **before
 producer's first release (that is why `Casks/keycast.rb` started as a placeholder). Then
 verify the touch-ups:
 
-- **`app "<name>.app"`** — the `.app` name inside a `.dmg` is a *guess*; verify the real
-  bundle name.
+- **`app "<name>.app"`** — the `.app` name inside a `.dmg` or `.zip` is a *guess*; verify
+  the real bundle name.
 - **`depends_on :macos`** is the default. If `brew audit --online` says the cask's macOS
   floor is higher than the bundle's `LSMinimumSystemVersion`, pin it: `depends_on macos:
   :big_sur`.
