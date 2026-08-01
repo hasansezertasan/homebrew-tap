@@ -309,7 +309,12 @@ __marimo__/
 
 *.gem
 *.rbc
-/.config
+# `/.config` from the Ruby template, narrowed: ignore machine-local files
+# under .config/ but track the tooling config relocated here (root declutter).
+/.config/*
+!/.config/mise.toml
+!/.config/.yamlfmt.yml
+!/.config/.yamllint.yaml
 /coverage/
 /InstalledFiles
 /pkg/

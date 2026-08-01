@@ -18,7 +18,7 @@ depends = ["style:fix", "style:check"]
 
 [tasks."style:fix"]
 description = "Format YAML files in place"
-run = "yamlfmt ."
+run = "yamlfmt -conf .config/.yamlfmt.yml ."
 
 [tasks."style:check"]
 description = "Lint YAML and GitHub Actions files (no fixes)"
@@ -26,7 +26,7 @@ run = """
 #!/usr/bin/env bash
 set -e
 echo "Running yamllint..."
-yamllint .
+yamllint -c .config/.yamllint.yaml .
 echo "Running actionlint..."
 actionlint
 echo "Running action-validator..."
