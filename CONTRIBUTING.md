@@ -70,6 +70,11 @@ You normally don't have to: `brew livecheck` + `brew bump-formula-pr` /
 `update-cask-dispatch.yml` (fired by a package's release pipeline) workflows, which
 open a PR with the bump.
 
+Producer repos only **signal**: they fire a `repository_dispatch` and never write
+to the tap or open the PR themselves — the tap does the bump and opens the PR with
+its own `GITHUB_TOKEN`. A producer's `TAP_TOKEN` therefore needs only **Contents:
+write** (not Pull requests: write).
+
 To do it by hand: `brew bump-formula-pr --version=<v> <name>` (or `bump-cask-pr`),
 then open a PR. CI audits and builds the change.
 
