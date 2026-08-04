@@ -29,7 +29,7 @@ jobs:
     steps:
       - name: Set up Homebrew
         id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@fd832223f9f99ebf0244dd20658680e5d4aca049 # main
+        uses: Homebrew/actions/setup-homebrew@726029484f4d6a3cc19c735a5fb22595f8655a9a # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Cache Homebrew Bundler RubyGems
@@ -64,7 +64,7 @@ jobs:
     steps:
       - name: Set up Homebrew
         id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@fd832223f9f99ebf0244dd20658680e5d4aca049 # main
+        uses: Homebrew/actions/setup-homebrew@726029484f4d6a3cc19c735a5fb22595f8655a9a # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install sccache
@@ -129,7 +129,7 @@ jobs:
     steps:
       - name: Set up Homebrew
         id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@fd832223f9f99ebf0244dd20658680e5d4aca049 # main
+        uses: Homebrew/actions/setup-homebrew@726029484f4d6a3cc19c735a5fb22595f8655a9a # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Audit casks
