@@ -3,8 +3,8 @@ class Ocom < Formula
 
   desc "Unified TUI for managing network/privacy tools: OpenVPN, SpoofDPI, WARP"
   homepage "https://github.com/hasansezertasan/ocom"
-  url "https://files.pythonhosted.org/packages/53/c0/7d1a90f072945f74679a681c386d852220e70b47de78e7ed00bae1ae87be/ocom-0.1.0.tar.gz"
-  sha256 "b353038a2df59c3a10a266a7776c0d44a28c422911e4f42b29983febd21ab844"
+  url "https://files.pythonhosted.org/packages/d8/3d/7b36f6b126b77b72706f8f1086172c534f12c0426caf69756f61c31ca701/ocom-0.1.1.tar.gz"
+  sha256 "6b1ee93340e3a5174f9bc40cec5e10221eb3f5d3c8023c5c4c38e47729be1026"
   license "MIT"
 
   livecheck do
