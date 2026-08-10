@@ -3,8 +3,8 @@ class Nur < Formula
 
   desc "Script discovery and execution engine for project task runners"
   homepage "https://github.com/hasansezertasan/nur"
-  url "https://files.pythonhosted.org/packages/5b/53/6b251a61847c80f3c2a53a2c52f9b9c69f66e78c7f5464077c3c0632e76a/nur-0.2.0.tar.gz"
-  sha256 "1dfbbe382114d59ca211343be6116a36baae9a80cace601fe984fdf6b6c3601f"
+  url "https://files.pythonhosted.org/packages/d1/73/c825cb97db08e6c9c95b5857a705b3a722239c3d339c752d7a61bc7f85d5/nur-0.2.1.tar.gz"
+  sha256 "f6370a7ae2227722f859d93ab5d5e736651c55f38efd51ec4ffba6cade957071"
   license "MIT"
 
   livecheck do
@@ -41,8 +41,8 @@ class Nur < Formula
   end
 
   resource "platformdirs" do
-    url "https://files.pythonhosted.org/packages/78/9b/560e4be8e26f6fd133a03630a8df0c663b9e8d61b4ade152b72005aec83b/platformdirs-4.11.0.tar.gz"
-    sha256 "0555d18370482847566ffabcaa53ad7c6c1c29f195989ae1ed634a05f76ea1e0"
+    url "https://files.pythonhosted.org/packages/36/0a/062135c9a98dac804265073cc3afdbec5ae1aa37980bb354f461bafe81b4/platformdirs-4.11.1.tar.gz"
+    sha256 "bb1af68078f25e2f3e111e2d43b8d536df41b73c8a684b40bb018223b66fae27"
   end
 
   resource "pygments" do
@@ -71,8 +71,8 @@ class Nur < Formula
   end
 
   resource "typer" do
-    url "https://files.pythonhosted.org/packages/37/78/fda3361b56efc27944f24225f6ecd13d96d6fcfe37bd0eb34e2f4c63f9fc/typer-0.27.0.tar.gz"
-    sha256 "629bd12ea5d13a17148125d9a264f949eb171fb3f120f9b04d85873cab054fa5"
+    url "https://files.pythonhosted.org/packages/ae/40/4a3db7990d1f62a53182aa96eaef57aeb2886a27f90a195bc66713565d31/typer-0.27.1.tar.gz"
+    sha256 "a79bef8469a79c45498e7b814ecf8d603cc7644e9acbd9e19cac0334240b18df"
   end
 
   resource "typing-extensions" do
