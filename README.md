@@ -135,54 +135,39 @@ jobs:
 <details>
 <summary><strong>For LLM Agents</strong></summary>
 
-**Prerequisites:**
+If you are Claude Code (or another agent) working **inside the package repo**, invoke
+the bundled skill instead of following prose:
 
-- A GitHub fine-grained PAT scoped to the tap repo with **Contents: write**
-  (not the broad classic `repo` scope; Pull requests: write is not needed),
-  stored as `HOMEBREW_TAP_TOKEN` in the repository secrets
+> Use the `homebrew-formula-dispatch` skill to wire this repo up.
 
-**Instructions:**
+The skill lives in the tap at
+[`.claude/skills/homebrew-formula-dispatch/`](.claude/skills/homebrew-formula-dispatch/SKILL.md).
+Copy that folder into the package repo's `.claude/skills/` (or install the tap as a
+plugin — see *Promoting the skills to a marketplace* below) so the agent can discover
+it. It writes `.github/workflows/update-homebrew-formula.yml`, verifies the YAML, and
+reminds you to add the `HOMEBREW_TAP_TOKEN` secret (fine-grained PAT, **Contents:
+write** only).
 
-1. Create `.github/workflows/update-homebrew-formula.yml` with this content:
+If you don't have the skill available, follow the **For Humans → Option B** manual steps
+above — they contain the same workflow YAML.
 
-```yaml
-name: Update Homebrew Formula
-on:
-  release:
-    types: [published]
-  workflow_dispatch:
-jobs:
-  update-formula:
-    name: Trigger formula update
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger homebrew-tap update
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          repository: hasansezertasan/homebrew-tap
-          event-type: update-formula
-          client-payload: |
-            {
-              "formula": "${{ github.event.repository.name }}",
-              "version": "${{ github.event.release.tag_name }}"
-            }
-      - name: Summary
-        run: |
-          echo "Triggered Homebrew formula update for ${{ github.event.repository.name }}"
-          echo "Version: ${{ github.event.release.tag_name }}"
-          echo ""
-          echo "Check the homebrew-tap repo for the PR:"
-          echo "https://github.com/hasansezertasan/homebrew-tap/pulls"
-```
+</details>
 
-2. Verify the file exists and has correct YAML syntax
+<details>
+<summary><strong>Promoting the skills to a marketplace</strong></summary>
 
-**Important:**
+This tap's skills (`homebrew-add`, `homebrew-formula-dispatch`) are **project skills**
+under [`.claude/skills/`](.claude/skills/), auto-discovered by Claude Code when you work
+inside this repo. `homebrew-formula-dispatch` is intentionally self-contained (its
+workflow YAML is inlined) so you can copy its folder into any package repo's
+`.claude/skills/` and it works there too.
 
-- `formula` in the payload should match the repository name (e.g., "micoo" for micoo repo)
-- `version` is extracted from the release tag (e.g., "v1.0.0" or "1.0.0")
-- The workflow triggers on `release: published` events
+To make the skills installable across repos with one command, wrap them as a Claude Code
+plugin: add `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`, and move
+the skills to a top-level `skills/` directory (plugin skills load from `skills/`, not
+`.claude/skills/`). Note this trade-off: moving them out of `.claude/skills/` drops their
+automatic in-repo discovery when working in the tap, so this migration is only worth it
+once the cross-repo install story matters more than local convenience.
 
 </details>
 
