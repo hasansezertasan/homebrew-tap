@@ -3,8 +3,8 @@ class Cobo < Formula
 
   desc "Generic CLI for fetching boilerplate files from configurable git repositories"
   homepage "https://github.com/hasansezertasan/cobo"
-  url "https://files.pythonhosted.org/packages/2a/d7/91848dd6ccb8d8f3f2e4b8921ea8da89734eb25f9992d119b680f0ccde28/cobo-0.4.0.tar.gz"
-  sha256 "b4809d77f81dea67ca3ae450af634d42a088e01f1b277a2ee2fb28b91a7833fb"
+  url "https://files.pythonhosted.org/packages/ef/3d/8e82621a68cb9ee578f0d9a02c96deec5be62e39f860b1de9e9284801608/cobo-0.5.0.tar.gz"
+  sha256 "91e8c47435e8a5f68f46f80d6ceae77c34038e80ad888ab2b0752403097ad4b9"
   license "MIT"
 
   livecheck do
@@ -25,8 +25,8 @@ class Cobo < Formula
   end
 
   resource "gitpython" do
-    url "https://files.pythonhosted.org/packages/ba/0d/132ed135c871b6bf91adf16a0e43797cd535b81d4973b5d09291c54fc5ee/gitpython-3.1.57.tar.gz"
-    sha256 "c493ec57c0ef6b19743798b6a5af859c71814b524e7e6f97baa2f8e658961488"
+    url "https://files.pythonhosted.org/packages/ca/dc/126b28e76b24a9268ba931ad3e012f71ebdadf62fd9f17758f7074bb0b20/gitpython-3.1.59.tar.gz"
+    sha256 "0a1475cfdc38a5bfba1a3e9a4a9da52a39749ecec322b772915c019f94e5b7e4"
   end
 
   resource "markdown-it-py" do
@@ -37,11 +37,6 @@ class Cobo < Formula
   resource "mdurl" do
     url "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz"
     sha256 "bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"
-  end
-
-  resource "platformdirs" do
-    url "https://files.pythonhosted.org/packages/78/9b/560e4be8e26f6fd133a03630a8df0c663b9e8d61b4ade152b72005aec83b/platformdirs-4.11.0.tar.gz"
-    sha256 "0555d18370482847566ffabcaa53ad7c6c1c29f195989ae1ed634a05f76ea1e0"
   end
 
   resource "pygments" do
@@ -65,8 +60,8 @@ class Cobo < Formula
   end
 
   resource "typer" do
-    url "https://files.pythonhosted.org/packages/37/78/fda3361b56efc27944f24225f6ecd13d96d6fcfe37bd0eb34e2f4c63f9fc/typer-0.27.0.tar.gz"
-    sha256 "629bd12ea5d13a17148125d9a264f949eb171fb3f120f9b04d85873cab054fa5"
+    url "https://files.pythonhosted.org/packages/ae/40/4a3db7990d1f62a53182aa96eaef57aeb2886a27f90a195bc66713565d31/typer-0.27.1.tar.gz"
+    sha256 "a79bef8469a79c45498e7b814ecf8d603cc7644e9acbd9e19cac0334240b18df"
   end
 
   def install
