@@ -36,6 +36,16 @@ def field(text: str, key: str) -> str:
     return match.group(1) if match else ""
 
 
+def escape_cell(value: str) -> str:
+    """Escape characters that would corrupt a Markdown table cell.
+
+    A literal ``|`` in a description (e.g. a PyPI summary) would otherwise be
+    read as a column delimiter, shifting every following cell and silently
+    breaking the row.
+    """
+    return value.replace("|", "\\|")
+
+
 def collect(dir_name: str) -> dict[str, dict[str, str]]:
     """Map stem -> {desc, homepage} for every ``.rb`` file in a tap subdirectory."""
     items: dict[str, dict[str, str]] = {}
@@ -69,7 +79,8 @@ def build_table() -> str:
             kind, python = "Cask", "No"
         homepage = meta["homepage"] or f"https://pypi.org/project/{name}/"
         rows.append(
-            f"| [`{name}`]({homepage}) | {meta['desc']} | {kind} | {python} |"
+            f"| [`{escape_cell(name)}`]({homepage}) | {escape_cell(meta['desc'])} "
+            f"| {kind} | {python} |"
         )
     return "\n".join([BEGIN, *rows, END])
 
