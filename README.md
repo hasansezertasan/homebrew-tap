@@ -32,6 +32,7 @@ brew "<formula>"
 | [`nur`](https://github.com/hasansezertasan/nur) | Script discovery and execution engine for project task runners | Formula | Yes |
 | [`ocom`](https://github.com/hasansezertasan/ocom) | Unified TUI for managing network/privacy tools: OpenVPN, SpoofDPI, WARP | Formula | Yes |
 | [`olink`](https://github.com/hasansezertasan/olink) | CLI tool that opens external URLs related to your project | Formula | Yes |
+| [`peta`](https://pypi.org/project/peta/) | Human-friendly Python package metadata viewer | Formula | Yes |
 <!-- END PACKAGES TABLE -->
 
 ```sh

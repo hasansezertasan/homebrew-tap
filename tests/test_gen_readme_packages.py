@@ -26,6 +26,14 @@ class FieldTest(unittest.TestCase):
         self.assertEqual(gen.field("class Foo < Formula\nend\n", "desc"), "")
 
 
+class EscapeCellTest(unittest.TestCase):
+    def test_escapes_pipe(self) -> None:
+        self.assertEqual(gen.escape_cell("a | b"), "a \\| b")
+
+    def test_leaves_plain_text_untouched(self) -> None:
+        self.assertEqual(gen.escape_cell("plain description"), "plain description")
+
+
 class SpliceTest(unittest.TestCase):
     def test_replaces_only_marked_region(self) -> None:
         readme = f"intro\n{gen.BEGIN}\nold\n{gen.END}\noutro\n"
