@@ -291,7 +291,7 @@ Audit with `brew audit --cask --strict --online hasansezertasan/tap/<name>`.
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to add a formula or cask, test
+See [`CONTRIBUTING.md`](.github/CONTRIBUTING.md) for how to add a formula or cask, test
 locally, and how version bumps are automated.
 
 ## Documentation
