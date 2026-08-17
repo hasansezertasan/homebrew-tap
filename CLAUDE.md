@@ -111,6 +111,7 @@ brew test micoo
 5. **Audit syntax**: Use `brew audit --strict --online <formula-name>` not the file path.
 6. **Dependency order**: Build dependencies (like Rust) must come before runtime dependencies.
 7. **Livecheck**: `brew create` doesn't add livecheck - you must add it manually for auto-updates.
+8. **README Packages table**: after adding/removing/renaming a formula or cask, run `python scripts/gen_readme_packages.py` to regenerate the catalog table in README.md (from each item's `desc`/`homepage`). `scripts.yml` runs `--check` and fails the PR if it's stale.
 
 ### Manual Workflow (Not Recommended)
 
@@ -126,7 +127,7 @@ Only use if automated workflow fails:
 ## CI/CD Workflows
 
 - **tests.yml**: Three jobs — `syntax` (Ubuntu, `--only-tap-syntax` on PR/push touching `Formula/**`, `Casks/**`, or this workflow), `formulae` (macos-26, builds bottles for non-draft PRs, gated on `syntax`), and `cask-audit` (macos-latest, non-draft PRs, gated on `syntax`). The **cask-audit job is required because `brew audit` skips the cask auditor on Linux** (`next [] if os == :linux`) — so the Ubuntu `syntax` job only runs cask *style*, not the cask auditor. cask-audit runs **offline** (`brew audit --cask --strict`, no `--online`): a bootstrap cask points at an artifact that doesn't exist until the producer's first real release, so the `--online` download check runs at bump time (dispatch/cron) instead. Casks ship pre-built apps, so they get no bottle job. Uses sccache + Cargo registry caching for Rust-heavy Python deps (`pydantic-core` etc.).
-- **scripts.yml**: Runs the stdlib unit tests for the scaffolder scripts (`add_formula.py`, `add_cask.py`) via `python -m unittest discover -s tests`. Ubuntu, triggered only on `scripts/**`, `tests/**`, or this workflow — kept separate from the Homebrew-native `tests.yml` so a formula/cask edit and a script edit don't cross-trigger.
+- **scripts.yml**: Runs the stdlib unit tests for the scaffolder scripts (`add_formula.py`, `add_cask.py`) via `python -m unittest discover -s tests`, then checks the README Packages table is current (`gen_readme_packages.py --check`). Ubuntu, triggered on `scripts/**`, `tests/**`, `Formula/**`, `Casks/**`, `README.md`, or this workflow — the formula/cask/README paths are included so the freshness check fires when the catalog changes, not just when a script does. Kept separate from the Homebrew-native `tests.yml` (bottle builds) so unrelated concerns don't cross-trigger.
 - **publish.yml**: Pulls bottles when PR has `pr-pull` label and pushes to main
 - **update-formulas.yml**: Uses `brew livecheck` to check for updates weekly, creates PRs using `brew bump-formula-pr` and `brew update-python-resources`
 - **update-casks.yml**: Cask counterpart to update-formulas.yml. Weekly (Mon 9:15 UTC), uses `brew livecheck --cask` + `brew bump-cask-pr` to bump version and recompute sha256. **Runs on `macos-latest`** (brew rejects cask subcommands on Linux). Audits each bump inline and reverts it on failure, since `GITHUB_TOKEN`-opened PRs don't trigger `tests.yml`. Requires each cask to have a `livecheck` block (e.g. `strategy :github_latest`). This is the **safety net** behind the dispatch path.

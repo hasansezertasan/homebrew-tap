@@ -11,11 +11,17 @@ on:
     paths:
       - "scripts/**"
       - "tests/**"
+      - "Formula/**"
+      - "Casks/**"
+      - "README.md"
       - ".github/workflows/scripts.yml"
   pull_request:
     paths:
       - "scripts/**"
       - "tests/**"
+      - "Formula/**"
+      - "Casks/**"
+      - "README.md"
       - ".github/workflows/scripts.yml"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -37,3 +43,5 @@ jobs:
           python-version: "3.14"
       - name: Run scaffolder tests
         run: python -m unittest discover -s tests -v
+      - name: Check README packages table is up to date
+        run: python scripts/gen_readme_packages.py --check
