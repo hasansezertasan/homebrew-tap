@@ -38,8 +38,8 @@ mise run add-cask owner/repo --seed                   # no release yet: placehol
 The scripts fill in metadata, the `livecheck` block, and (for a formula) the
 `resource` blocks. Then verify the touch-ups they **can't** infer — system
 (non-Python) `depends_on`, the `test do` command, the guessed cask `.app` name, a
-raised macOS floor. The README's [Adding a New Formula](README.md#adding-a-new-formula)
-and [Adding a New Cask](README.md#adding-a-new-cask) sections and the `homebrew-add`
+raised macOS floor. The README's [Adding a New Formula](../README.md#adding-a-new-formula)
+and [Adding a New Cask](../README.md#adding-a-new-cask) sections and the `homebrew-add`
 skill cover the details.
 
 ## Testing locally
@@ -78,7 +78,7 @@ write** (not Pull requests: write).
 To do it by hand: `brew bump-formula-pr --version=<v> <name>` (or `bump-cask-pr`),
 then open a PR. CI audits and builds the change.
 
-See [`CLAUDE.md`](CLAUDE.md) for the full architecture notes.
+See [`CLAUDE.md`](../CLAUDE.md) for the full architecture notes.
 
 ## Questions?
 
