@@ -39,12 +39,14 @@ Chosen option: **Option A (keep the `brew`-native workflows)**, because
 Renovate's Homebrew manager cannot handle the shape of this tap and would either
 do nothing or produce partial/broken bumps.
 
-Renovate's Homebrew manager only detects **GitHub release/archive** and
-**npmjs.org** URLs, and explicitly does **not** touch Python `resource` blocks or
-casks. This tap's formulae all use **PyPI source URLs**
-(`files.pythonhosted.org/...`) as their main `url` and rely heavily on resource
-blocks; the sole cask (`keycast`) is out of scope entirely. No current item
-qualifies as a Renovate candidate.
+The Renovate 44.32.2 Homebrew manager support matrix recognizes the
+`github-releases`, `github-tags`, and `npm` datasources, but not PyPI URLs or
+casks, and it does not update Python `resource` blocks. This tap has eight
+PyPI-sourced formulae whose main URLs
+(`files.pythonhosted.org/...`) are unsupported, plus one unsupported cask
+(`keycast`). Separately, `Formula/hwid.rb` has no `resource` blocks; the other
+seven formulae do, and Renovate cannot update them. No current item qualifies
+as a Renovate candidate.
 
 ### Consequences
 
@@ -60,10 +62,11 @@ qualifies as a Renovate candidate.
 
 ### Confirmation
 
-Verified by inspecting every file in `Formula/` and `Casks/`: all formula main
-`url`s point at `files.pythonhosted.org` (not GitHub/NPM), every formula carries
-`resource` blocks, and `keycast` is a cask. All three fall outside Renovate's
-Homebrew manager support matrix.
+Verified by inspecting every file in `Formula/` and `Casks/`: eight formula
+main `url`s point at `files.pythonhosted.org` (not GitHub/NPM), seven formulae
+carry `resource` blocks, `hwid` does not, and `keycast` is a cask. The PyPI
+URLs, Python resource blocks, and cask each fall outside Renovate's Homebrew
+manager support matrix.
 
 ## Pros and Cons of the Options
 
