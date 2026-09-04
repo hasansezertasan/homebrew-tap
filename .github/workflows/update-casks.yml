@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@c69e528904c52915e7f40e120fc7d49773bbb2a0 # main
+        uses: Homebrew/actions/setup-homebrew@f8d4222eb633e65c2a0157383cf80861fc7fae7f # main
       - name: Check for cask updates
         id: check
         # Read the workflow_dispatch input through env (never interpolate
@@ -87,7 +87,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@c69e528904c52915e7f40e120fc7d49773bbb2a0 # main
+        uses: Homebrew/actions/setup-homebrew@f8d4222eb633e65c2a0157383cf80861fc7fae7f # main
       - name: Update casks
         run: |
           updates='${{ needs.check-updates.outputs.updates }}'
