@@ -142,11 +142,11 @@ the bundled skill instead of following prose:
 
 The skill lives in the tap at
 [`.claude/skills/homebrew-formula-dispatch/`](.claude/skills/homebrew-formula-dispatch/SKILL.md).
-Copy that folder into the package repo's `.claude/skills/` (or install the tap as a
-plugin — see *Promoting the skills to a marketplace* below) so the agent can discover
-it. It writes `.github/workflows/update-homebrew-formula.yml`, verifies the YAML, and
-reminds you to add the `HOMEBREW_TAP_TOKEN` secret (fine-grained PAT, **Contents:
-write** only).
+Copy that folder into the package repo's `.claude/skills/` so the agent can discover it.
+An installable plugin is a future option; see *Promoting the skills to a marketplace*
+below. The skill writes `.github/workflows/update-homebrew-formula.yml`, verifies the
+YAML, and reminds you to add the `HOMEBREW_TAP_TOKEN` secret (fine-grained PAT,
+**Contents: write** only).
 
 If you don't have the skill available, follow the **For Humans → Option B** manual steps
 above — they contain the same workflow YAML.
