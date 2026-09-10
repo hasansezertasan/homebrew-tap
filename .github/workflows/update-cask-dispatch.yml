@@ -59,7 +59,7 @@ jobs:
           } >> "$GITHUB_ENV"
           echo "Validated cask: $RAW_CASK"
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@c722b5d961eb7f3ebec81ec2e5584faf7c3cff5d # main
+        uses: Homebrew/actions/setup-homebrew@3b81d438eda92ee13b5849940d993be027717ecf # main
       - name: Resolve target version
         id: check
         run: |
