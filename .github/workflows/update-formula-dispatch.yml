@@ -51,7 +51,7 @@ jobs:
           } >> "$GITHUB_ENV"
           echo "Validated formula: $RAW_FORMULA"
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@1e34f2e2acaa766b7efacb8c26352e6abbb023f9 # main
+        uses: Homebrew/actions/setup-homebrew@7001732169813b7bd296f39014e60fcc07f0ef9a # main
       - name: Check for update
         id: check
         run: |
