@@ -3,8 +3,8 @@ class Peta < Formula
 
   desc "Human-friendly Python package metadata viewer"
   homepage "https://pypi.org/project/peta/"
-  url "https://files.pythonhosted.org/packages/4e/02/5a4b3ac520111931bb0e471d5673c39f949a5f603d33c3726894e7df3853/peta-0.1.1.tar.gz"
-  sha256 "c64ce853709b2524628ce178673a2a86d91b522b3158d68b7d871f565065a2f9"
+  url "https://files.pythonhosted.org/packages/81/ca/b4bec5ddba3de1305ae5f54f03c134719ef4060c3fe962da98a9bc220e5a/peta-0.2.0.tar.gz"
+  sha256 "a00ac60e6de4170ebeae7d4d771348db472645e6cffeeb3f155ea21ceec33f5a"
   license "MIT"
 
   livecheck do
@@ -45,8 +45,8 @@ class Peta < Formula
   end
 
   resource "idna" do
-    url "https://files.pythonhosted.org/packages/5f/f7/abb373e5757eaec4b922b92f97ec8d6d7e057cf06778247604fbc4e7c3f3/idna-3.19.tar.gz"
-    sha256 "5e0811a4383b21dc5838069f801c4fb62113b7447663d2530d2bd6e77b49bf15"
+    url "https://files.pythonhosted.org/packages/f5/08/8eea9d4b8302028f3abb2c0813953f7aec26d33b7a8960ed760e65ff29fa/idna-3.20.tar.gz"
+    sha256 "a7db850025b95ded1eae8a46181a1a6c56c92c96f0e2b005d9ff8dc0210cab44"
   end
 
   resource "markdown-it-py" do
