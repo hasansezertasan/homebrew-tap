@@ -3,8 +3,8 @@ class Peta < Formula
 
   desc "Human-friendly Python package metadata viewer"
   homepage "https://pypi.org/project/peta/"
-  url "https://files.pythonhosted.org/packages/81/ca/b4bec5ddba3de1305ae5f54f03c134719ef4060c3fe962da98a9bc220e5a/peta-0.2.0.tar.gz"
-  sha256 "a00ac60e6de4170ebeae7d4d771348db472645e6cffeeb3f155ea21ceec33f5a"
+  url "https://files.pythonhosted.org/packages/92/15/5089ac4339d1b17aad0a5531ee0b1038f0d55934f7affa7f5d57e3fd2a5f/peta-0.3.0.tar.gz"
+  sha256 "082ffe1778e658e3261904c557041e6118935e8798a8e92a7fcd844600e398d9"
   license "MIT"
 
   livecheck do
