@@ -23,7 +23,7 @@ from pathlib import Path
 PYPI = "https://pypi.org/pypi"
 
 # Tap convention: package against the current default interpreter unless the
-# target package's requires_python floor is newer. See CLAUDE.md.
+# target package's requires_python floor is newer. See AGENTS.md.
 DEFAULT_PYTHON_SERIES = "3.14"
 
 # Packages whose presence in the resolved tree implies a build-time toolchain.
@@ -194,7 +194,7 @@ def render(name: str, info: dict, sdist_url: str, sdist_sha: str,
         "  end",
         "",
     ]
-    # Build dependencies must precede runtime deps (see CLAUDE.md gotcha #6).
+    # Build dependencies must precede runtime deps (see AGENTS.md gotcha #6).
     for dep in build_deps:
         lines.append(f"  depends_on {dep}")
     lines += [
@@ -304,7 +304,7 @@ def main() -> None:
     resources.sort(key=lambda r: r[0])
 
     # Emit unique build-time deps implied by the resolved tree (e.g. rust for
-    # pydantic-core). CLAUDE.md gotcha #3. De-duplicate so two resources that
+    # pydantic-core). AGENTS.md gotcha #3. De-duplicate so two resources that
     # map to the same toolchain don't render duplicate `depends_on` lines.
     build_deps = sorted(
         {

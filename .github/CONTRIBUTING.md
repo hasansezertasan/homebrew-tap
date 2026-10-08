@@ -78,7 +78,7 @@ write** (not Pull requests: write).
 To do it by hand: `brew bump-formula-pr --version=<v> <name>` (or `bump-cask-pr`),
 then open a PR. CI audits and builds the change.
 
-See [`CLAUDE.md`](../CLAUDE.md) for the full architecture notes.
+See [`AGENTS.md`](../AGENTS.md) for the full architecture notes.
 
 ## Questions?
 
