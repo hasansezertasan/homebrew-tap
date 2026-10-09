@@ -53,13 +53,16 @@ jobs:
           event-type: update-formula
           client-payload: |
             {
-              "formula": "${{ github.event.repository.name }}",
-              "version": "${{ github.event.release.tag_name }}"
+              "formula": ${{ toJSON(github.event.repository.name) }},
+              "version": ${{ toJSON(github.event.release.tag_name) }}
             }
       - name: Summary
+        env:
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          echo "Triggered Homebrew formula update for ${{ github.event.repository.name }}"
-          echo "Version: ${{ github.event.release.tag_name }}"
+          echo "Triggered Homebrew formula update for $REPOSITORY_NAME"
+          echo "Version: $RELEASE_TAG"
           echo ""
           echo "Check the homebrew-tap repo for the PR:"
           echo "https://github.com/hasansezertasan/homebrew-tap/pulls"
