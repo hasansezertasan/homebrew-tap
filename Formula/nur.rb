@@ -3,8 +3,8 @@ class Nur < Formula
 
   desc "Script discovery and execution engine for project task runners"
   homepage "https://github.com/hasansezertasan/nur"
-  url "https://files.pythonhosted.org/packages/a0/14/94eb0996b46ec6e0352815b872631e6d922c16611c78a5d8c09cf4f5f820/nur-0.5.0.tar.gz"
-  sha256 "f6b36af2c86b868dc1bbe16680dacd0f45bd24e41046c7021b199b4f624a0fa4"
+  url "https://files.pythonhosted.org/packages/53/79/a2c63711b9b6e64af3cb1366d919b6ac0eaa2f46688c67579580c2a923c8/nur-0.9.0.tar.gz"
+  sha256 "562220bad06ac2df5d32ed606a8e1db2c097f6c9b96e42086960ebf15072bc35"
   license "MIT"
 
   livecheck do
