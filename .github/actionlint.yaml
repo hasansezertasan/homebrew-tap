@@ -1,4 +1,6 @@
 ---
 self-hosted-runner:
-  labels: []
+  # Newer than the runner labels actionlint ships; GitHub-hosted.
+  labels:
+    - ubuntu-26.04
 config-variables: null

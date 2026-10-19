@@ -1,8 +1,8 @@
 ---
 name: Update Cask (Dispatch)
 # Triggered by cask source repos after they publish a GitHub release with a
-# downloadable app artifact (e.g. keycast's release.yml fires this once its
-# .dmg is attached and the release is un-drafted).
+# downloadable app artifact (for example, after its release workflow attaches
+# a .dmg and publishes the release).
 #
 # All the work happens HERE, not in the producer: the producer only signals.
 # That keeps cask-bump logic in one place as more producers come online. A
@@ -12,9 +12,11 @@ name: Update Cask (Dispatch)
 on:
   repository_dispatch:
     types: [update-cask]
+# Deny-by-default; each job opts back into exactly what it needs.
+permissions: {}
 # Expected payload:
 # {
-#   "cask": "keycast",           # Cask name (required)
+#   "cask": "example",           # Cask name (required)
 #   "version": "0.4.0"           # New version (optional; livecheck if omitted)
 # }
 jobs:
@@ -29,10 +31,12 @@ jobs:
       issues: write  # open a failure issue on this tap (no PAT, GITHUB_TOKEN only)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
       - name: Validate payload
         # The dispatch payload is attacker-controllable. Read it ONLY through env
         # (never interpolate ${{ ... }} into the script source, which would let a
-        # value like `keycast"; rm -rf / #` execute), and validate against strict
+        # malicious input execute), and validate against strict
         # patterns before any downstream use. Validated values are persisted to
         # $GITHUB_ENV so later steps consume the sanitized data, not the raw event.
         env:
@@ -59,11 +63,12 @@ jobs:
           } >> "$GITHUB_ENV"
           echo "Validated cask: $RAW_CASK"
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # main
+        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878  # main
       - name: Resolve target version
         id: check
         run: |
-          tap="${{ github.repository_owner }}/$(basename "${{ github.repository }}")"
+          repository="${GITHUB_REPOSITORY#*/}"
+          tap="${GITHUB_REPOSITORY_OWNER}/${repository#homebrew-}"
           ref="${tap}/${CASK}"
 
           if [ -n "$VERSION" ]; then
@@ -90,7 +95,8 @@ jobs:
         env:
           RESOLVED_VERSION: ${{ steps.check.outputs.version }}
         run: |
-          tap="${{ github.repository_owner }}/$(basename "${{ github.repository }}")"
+          repository="${GITHUB_REPOSITORY#*/}"
+          tap="${GITHUB_REPOSITORY_OWNER}/${repository#homebrew-}"
           ref="${tap}/${CASK}"
 
           echo "Bumping $CASK to $RESOLVED_VERSION..."
@@ -107,7 +113,7 @@ jobs:
         if: steps.check.outputs.has_update == 'true'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
           commit-message: "chore(${{ env.CASK }}): update to ${{ steps.check.outputs.version }}"
           title: "chore(${{ env.CASK }}): update to ${{ steps.check.outputs.version }}"
           body: |
@@ -134,8 +140,16 @@ jobs:
           GH_REPO: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          body=$(printf '%s\n' \
+            "Automated cask bump triggered by a release dispatch failed." \
+            "" \
+            "- Cask: ${CASK:-<unknown>}" \
+            "- Version: ${VERSION:-<from livecheck>}" \
+            "- Run: $RUN_URL" \
+            "" \
+            "The weekly update-casks.yml cron will retry; investigate if it keeps failing.")
           gh issue create \
             --title "Cask bump failed: ${CASK:-<unknown>} ${VERSION}" \
             --label "automated,cask-bump-failure" \
-            --body "$(printf 'Automated cask bump triggered by a release dispatch failed.\n\n- Cask: %s\n- Version: %s\n- Run: %s\n\nThe weekly update-casks.yml cron will retry; investigate if it keeps failing.' "${CASK:-<unknown>}" "${VERSION:-<from livecheck>}" "$RUN_URL")" \
+            --body "$body" \
             || echo "::warning::could not open failure issue (labels may not exist yet)"

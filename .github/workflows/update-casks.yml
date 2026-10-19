@@ -15,6 +15,8 @@ on:
         required: false
         type: boolean
         default: false
+# Deny-by-default; each job opts back into exactly what it needs.
+permissions: {}
 jobs:
   check-updates:
     timeout-minutes: 10
@@ -24,10 +26,14 @@ jobs:
     outputs:
       updates: ${{ steps.check.outputs.updates }}
       has_updates: ${{ steps.check.outputs.has_updates }}
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # main
+        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878  # main
       - name: Check for cask updates
         id: check
         # Read the workflow_dispatch input through env (never interpolate
@@ -53,7 +59,9 @@ jobs:
             echo "Checking $cask..."
 
             # Run livecheck and capture output
-            livecheck_output=$(brew livecheck --cask --json "${{ github.repository_owner }}/$(basename "${{ github.repository }}")/${cask}" 2>/dev/null || echo "[]")
+            repository="${GITHUB_REPOSITORY#*/}"
+            tap="${GITHUB_REPOSITORY_OWNER}/${repository#homebrew-}"
+            livecheck_output=$(brew livecheck --cask --json "${tap}/${cask}" 2>/dev/null || echo "[]")
 
             # Check if there's an update (version.outdated == true)
             is_outdated=$(echo "$livecheck_output" | jq -r '.[0].version.outdated // false')
@@ -86,19 +94,23 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # main
+        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878  # main
       - name: Update casks
+        env:
+          UPDATES_JSON: ${{ needs.check-updates.outputs.updates }}
         run: |
-          updates='${{ needs.check-updates.outputs.updates }}'
-
-          echo "$updates" | jq -c '.[]' | while read -r update; do
+          echo "$UPDATES_JSON" | jq -c '.[]' | while read -r update; do
             cask=$(echo "$update" | jq -r '.cask')
             latest=$(echo "$update" | jq -r '.latest_version')
 
             echo "::group::Updating $cask to $latest"
 
-            ref="${{ github.repository_owner }}/$(basename "${{ github.repository }}")/${cask}"
+            repository="${GITHUB_REPOSITORY#*/}"
+            tap="${GITHUB_REPOSITORY_OWNER}/${repository#homebrew-}"
+            ref="${tap}/${cask}"
 
             # Use brew bump-cask-pr to update the cask (without creating PR).
             # This rewrites version + recomputes sha256 from the new download.
@@ -126,7 +138,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
           commit-message: "chore: update cask versions"
           title: "chore: update cask versions"
           body: |
