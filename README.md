@@ -92,8 +92,8 @@ from source, and run `brew test`. For a cask, run
 Two weekly workflows use `brew livecheck` to find and propose formula and cask
 updates. A formula bump is audited, built from source, and tested inside the run
 that opens the pull request, because a pull request opened with `GITHUB_TOKEN`
-does not trigger `tests.yml` — so `brew audit` alone would let a dependency that
-fails to build reach a PR looking verified. Bottles still come from `tests.yml`
+only gets `tests.yml` runs once a maintainer approves them — so `brew audit`
+alone would let a dependency that fails to build reach a PR looking verified. Bottles still come from `tests.yml`
 (see [Automated pull requests](#automated-pull-requests)). Two
 `repository_dispatch` workflows let a package repository request an update
 immediately after publishing:
@@ -119,12 +119,13 @@ the update workflows do.
 ### Automated pull requests
 
 The update and drift workflows open their pull requests with the repository
-secret `WORKFLOW_TOKEN` if defined, falling back to `GITHUB_TOKEN`. Because
-GitHub does not start workflows for actions performed by `GITHUB_TOKEN`, a pull
-request opened with it does not run `tests.yml` (the bottle build) or the other
-checks. Run the `brew test-bot` workflow manually via `workflow_dispatch` on the update
-branch before merging (tap-syntax and cask audit; the bottle build runs once
-pull request checks start), or push to its branch, or configure a fine-grained
+secret `WORKFLOW_TOKEN` if defined, falling back to `GITHUB_TOKEN`. GitHub
+creates the `pull_request` runs (`tests.yml`, the bottle build, and the other
+checks) for a pull request opened with `GITHUB_TOKEN` in an approval-required
+state: approve them from the pull request (**Approve workflows to run**) before
+merging. If no run is queued, run the `brew test-bot` workflow via
+`workflow_dispatch` on the update branch (tap-syntax and cask audit only; it
+does not build bottles), or push to its branch, or configure a fine-grained
 personal access token or GitHub App token for
 this repository as `WORKFLOW_TOKEN` (**Contents: write** and **Pull requests:
 write**) so the checks start automatically. The secret is optional.

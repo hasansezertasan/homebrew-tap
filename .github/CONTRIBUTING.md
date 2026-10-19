@@ -17,9 +17,11 @@ Include the commands and results in the pull request's verification section.
 ## Automated pull requests
 
 The update and boilerplate-drift workflows open pull requests with the repository
-secret `WORKFLOW_TOKEN` if present, falling back to `GITHUB_TOKEN`. GitHub does
-not start workflows for actions performed by `GITHUB_TOKEN`, so maintainers run
-the `brew test-bot` workflow manually via `workflow_dispatch` on the update branch
-before merging (tap-syntax and cask audit; the bottle build runs once pull
-request checks start), or close and reopen such a pull request (or push to its
-branch), or configure `WORKFLOW_TOKEN` to start everything automatically.
+secret `WORKFLOW_TOKEN` if present, falling back to `GITHUB_TOKEN`. A pull
+request opened with `GITHUB_TOKEN` gets `pull_request` runs in an
+approval-required state, so maintainers approve them from the pull request
+(**Approve workflows to run**) before merging. If no run is queued, run the
+`brew test-bot` workflow via `workflow_dispatch` on the update branch
+(tap-syntax and cask audit only; it does not build bottles), or close and
+reopen the pull request (or push to its branch), or configure `WORKFLOW_TOKEN`
+to start everything automatically.

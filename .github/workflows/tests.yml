@@ -13,8 +13,10 @@ on:
       - "Formula/**"
       - "Casks/**"
       - ".github/workflows/tests.yml"
-  # Manual fallback for pull requests opened with GITHUB_TOKEN, whose checks
-  # GitHub suppresses: run this workflow on the update branch before merging.
+  # Manual fallback for pull requests opened with GITHUB_TOKEN. A dispatch run
+  # covers tap-syntax and cask-audit only; it does not build bottles. Approve
+  # the queued pull_request run first; if none is queued, close and reopen the
+  # pull request or push a new commit to trigger the bottle build.
   workflow_dispatch:
 # Deny-by-default; each job opts back into exactly what it needs.
 permissions: {}

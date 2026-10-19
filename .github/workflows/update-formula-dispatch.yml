@@ -126,7 +126,7 @@ jobs:
             echo "$FORMULA has no virtualenv resources; skipping update-python-resources"
           fi
 
-          # The PR is opened with GITHUB_TOKEN and so won't trigger tests.yml.
+          # The PR is opened with GITHUB_TOKEN, so tests.yml waits for approval.
           # Audit HERE instead so the auto-PR is verified inside the run that
           # creates it (mirrors update-cask-dispatch.yml). A failure fails the
           # job, so no unverified PR is opened.
@@ -152,10 +152,11 @@ jobs:
             - **Version**: ${{ steps.check.outputs.version }}
 
             Audited, built from source, and tested in the workflow run that
-            opened this PR. Bottles are built by `tests.yml`, which a PR opened
-            with `GITHUB_TOKEN` does not trigger. Without a `WORKFLOW_TOKEN`
-            secret, close and reopen this PR (or push to its branch) to run the
-            bottle build before applying the `pr-pull` label.
+            opened this PR. Bottles are built by `tests.yml`. If this PR was
+            opened with `GITHUB_TOKEN` (no `WORKFLOW_TOKEN` secret), its runs
+            wait for approval: approve the pending workflow runs. With
+            `WORKFLOW_TOKEN` they start on their own. Wait for the bottle
+            build before applying the `pr-pull` label.
 
             ---
             *Triggered by repository_dispatch from package repo.*
