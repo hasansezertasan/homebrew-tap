@@ -3,8 +3,8 @@ class Olink < Formula
 
   desc "CLI tool that opens external URLs related to your project"
   homepage "https://github.com/hasansezertasan/olink"
-  url "https://files.pythonhosted.org/packages/63/0d/5bd93b5832d60035150ca0b97c707f63ae95a26d036eb29698b962df1fdd/olink-0.3.0.tar.gz"
-  sha256 "b12d70582c482884354c2dc182f5fa25af60732ed4c035d7cec0ab4b7d118f54"
+  url "https://files.pythonhosted.org/packages/1f/91/03b55f003d05f3b16d354bd3c7ad1e1def82ddf6fe48d9f285f29155b620/olink-0.4.0.tar.gz"
+  sha256 "8d59cc6a682c4b4d0f66bba6d6da310cd658190605b3227f345ccda5d7a20792"
   license "MIT"
 
   livecheck do
