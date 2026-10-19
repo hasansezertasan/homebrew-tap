@@ -104,7 +104,7 @@ jobs:
           brew bump-cask-pr --no-audit --no-browse --write-only \
             --version="$RESOLVED_VERSION" "$ref"
 
-          # The PR is opened with GITHUB_TOKEN and so won't trigger tests.yml.
+          # The PR is opened with GITHUB_TOKEN, so tests.yml waits for approval.
           # Audit HERE instead (online, against the published artifact), so the
           # auto-PR is verified inside the run that creates it. A failure here
           # trips the `if: failure()` issue step below.

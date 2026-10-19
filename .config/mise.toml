@@ -27,7 +27,7 @@ description = "Run the unit test suite"
 run = "python3 -m unittest discover -s tests -v"
 
 [tasks."check"]
-description = "Run all local verification"
+description = "Run tests, catalog freshness, YAML/Actions lint, and Cobo checks"
 run = [
   { task = "test" },
   { task = "check-readme" },

@@ -129,7 +129,7 @@ jobs:
             # bump-formula-pr rewrites URL + sha256; update-python-resources then
             # regenerates the resource blocks (bump alone does NOT touch them).
             #
-            # PRs opened with GITHUB_TOKEN don't trigger tests.yml, so — as in the
+            # PRs opened with GITHUB_TOKEN only run tests.yml after approval, so — as in the
             # cask workflows — verify the bump inline with `brew audit` and revert
             # the file if it fails, so a bad bump is excluded from the PR rather
             # than shipped unverified. A single formula failing must not abort the
@@ -191,10 +191,11 @@ jobs:
             ```
 
             Each bump was audited, built from source, and tested in the workflow
-            run that opened this PR. Bottles are built by `tests.yml`, which a PR
-            opened with `GITHUB_TOKEN` does not trigger. Without a
-            `WORKFLOW_TOKEN` secret, close and reopen this PR (or push to its
-            branch) to run the bottle build before applying the `pr-pull` label.
+            run that opened this PR. Bottles are built by `tests.yml`. If this PR was
+            opened with `GITHUB_TOKEN` (no `WORKFLOW_TOKEN` secret), its runs
+            wait for approval: approve the pending workflow runs. With
+            `WORKFLOW_TOKEN` they start on their own. Wait for the bottle
+            build before applying the `pr-pull` label.
 
             ---
             *This PR was automatically created by the update-formulas workflow.*

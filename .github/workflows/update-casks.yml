@@ -118,7 +118,7 @@ jobs:
             # must not abort the whole run, so the failure is downgraded to a
             # warning and the loop continues.
             #
-            # PRs opened with GITHUB_TOKEN don't trigger tests.yml, so verify the
+            # PRs opened with GITHUB_TOKEN only run tests.yml after approval, so verify the
             # bump inline with `brew audit` and revert the file if it fails — a
             # bad bump is then simply excluded from the PR rather than shipped.
             if brew bump-cask-pr --no-audit --no-browse --write-only \
