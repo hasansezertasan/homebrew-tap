@@ -3,8 +3,11 @@
 
 Scans ``Formula/*.rb`` and ``Casks/*.rb`` for each item's ``desc`` and
 ``homepage``, then rewrites the table between the ``BEGIN/END PACKAGES TABLE``
-markers in README.md. A package that ships as both a formula and a cask (e.g.
-``keycast``) is listed once with a combined type.
+markers in README.md. A package that ships as both a formula and a cask is
+listed once with a combined type. The ``Source`` column names the upstream
+provenance (formulae build from PyPI, casks install from GitHub releases), and
+formulae rows carry a ``PyPI`` link, so the table can never drift from what
+ships.
 
 Standard library only. Run with no arguments to rewrite README.md in place, or
 with ``--check`` to fail (non-zero exit) when the table is stale — used in CI so
@@ -37,13 +40,29 @@ def field(text: str, key: str) -> str:
 
 
 def escape_cell(value: str) -> str:
-    """Escape characters that would corrupt a Markdown table cell.
+    """Make a string safe for a Markdown table cell.
 
-    A literal ``|`` in a description (e.g. a PyPI summary) would otherwise be
-    read as a column delimiter, shifting every following cell and silently
-    breaking the row.
+    Descriptions come from lightly-normalized upstream summaries, so a raw
+    ``|`` would open a spurious column and an embedded newline would split the
+    row. Collapse whitespace (incl. newlines) and escape pipes.
     """
-    return value.replace("|", "\\|")
+    return " ".join(value.split()).replace("|", "\\|")
+
+
+def source(in_formula: bool, in_cask: bool) -> str:
+    """Provenance label for the ``Source`` column from the package type."""
+    if in_formula and in_cask:
+        return "PyPI + GitHub Releases"
+    if in_formula:
+        return "PyPI"
+    return "GitHub Releases"
+
+
+def links(in_formula: bool, name: str, homepage: str) -> str:
+    """Render the `` ([PyPI](...))`` suffix for the description cell."""
+    if not in_formula or "pypi.org" in homepage:
+        return ""
+    return f" ([PyPI](https://pypi.org/project/{name}/))"
 
 
 def collect(dir_name: str) -> dict[str, dict[str, str]]:
@@ -53,7 +72,7 @@ def collect(dir_name: str) -> dict[str, dict[str, str]]:
     if not directory.is_dir():
         return items
     for path in sorted(directory.glob("*.rb")):
-        text = path.read_text()
+        text = path.read_text(encoding="utf-8")
         items[path.stem] = {
             "desc": field(text, "desc"),
             "homepage": field(text, "homepage"),
@@ -66,8 +85,8 @@ def build_table() -> str:
     formulae = collect("Formula")
     casks = collect("Casks")
 
-    rows = ["| Package | What it does | Type | Needs Python? |",
-            "|---------|--------------|------|---------------|"]
+    rows = ["| Package | What it does | Type | Needs Python? | Source |",
+            "|---------|--------------|------|---------------|--------|"]
     for name in sorted(formulae.keys() | casks.keys()):
         meta = formulae.get(name) or casks[name]
         in_formula, in_cask = name in formulae, name in casks
@@ -79,8 +98,10 @@ def build_table() -> str:
             kind, python = "Cask", "No"
         homepage = meta["homepage"] or f"https://pypi.org/project/{name}/"
         rows.append(
-            f"| [`{escape_cell(name)}`]({homepage}) | {escape_cell(meta['desc'])} "
-            f"| {kind} | {python} |"
+            f"| [`{escape_cell(name)}`]({homepage}) "
+            f"| {escape_cell(meta['desc'])}"
+            f"{links(in_formula, name, meta['homepage'])} "
+            f"| {kind} | {python} | {source(in_formula, in_cask)} |"
         )
     return "\n".join([BEGIN, *rows, END])
 
@@ -99,18 +120,18 @@ def main() -> None:
                         help="exit non-zero if README.md is out of date")
     args = parser.parse_args()
 
-    current = README.read_text()
+    current = README.read_text(encoding="utf-8")
     updated = splice(current, build_table())
 
     if args.check:
         if current != updated:
             sys.exit("README.md packages table is stale; run "
-                     "`python scripts/gen_readme_packages.py`")
-        print("README.md packages table is up to date")
+                     "`mise run generate-readme`")
+        print("README.md packages table is up to date", file=sys.stderr)
         return
 
     if current != updated:
-        README.write_text(updated)
+        README.write_text(updated, encoding="utf-8")
         print("Updated README.md packages table")
     else:
         print("README.md packages table already up to date")

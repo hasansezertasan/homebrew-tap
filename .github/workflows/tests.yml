@@ -13,6 +13,11 @@ on:
       - "Formula/**"
       - "Casks/**"
       - ".github/workflows/tests.yml"
+  # Manual fallback for pull requests opened with GITHUB_TOKEN, whose checks
+  # GitHub suppresses: run this workflow on the update branch before merging.
+  workflow_dispatch:
+# Deny-by-default; each job opts back into exactly what it needs.
+permissions: {}
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -26,10 +31,34 @@ jobs:
       checks: read
       contents: read
       pull-requests: read
+    outputs:
+      formulae: ${{ steps.changed.outputs.formulae }}
     steps:
+      - name: Detect changed formulae
+        id: changed
+        # `brew test-bot --only-formulae` exits 1 with "Did not find any formulae
+        # or commits to test!" when nothing under Formula/ changed. That happens
+        # on a cask-only pull request, on a workflow-only edit, and on every pull
+        # request in a tap that has no formulae yet — so the bottle job below is
+        # gated on this rather than left to fail. Read the file list into a
+        # variable first: piping `gh` into `grep -q` can trip pipefail when grep
+        # exits early and gh takes a SIGPIPE.
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          files=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR}/files" --jq '.[].filename')
+          if grep -qE '^Formula/.+\.rb$' <<< "$files"; then
+            echo "formulae=true" >> "$GITHUB_OUTPUT"
+            echo "Formula changes detected; the bottle job will run."
+          else
+            echo "formulae=false" >> "$GITHUB_OUTPUT"
+            echo "No Formula/*.rb changes; skipping the bottle job."
+          fi
       - name: Set up Homebrew
         id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # main
+        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878  # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Cache Homebrew Bundler RubyGems
@@ -47,6 +76,7 @@ jobs:
     if: |
       github.event_name == 'pull_request'
       && github.event.pull_request.draft == false
+      && needs.syntax.outputs.formulae == 'true'
     timeout-minutes: 30
     runs-on: macos-26
     permissions:
@@ -64,7 +94,7 @@ jobs:
     steps:
       - name: Set up Homebrew
         id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # main
+        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878  # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install sccache
@@ -113,8 +143,9 @@ jobs:
     name: cask-audit
     needs: syntax
     if: |
-      github.event_name == 'pull_request'
-      && github.event.pull_request.draft == false
+      github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'pull_request'
+        && github.event.pull_request.draft == false)
     timeout-minutes: 15
     # macOS is REQUIRED: brew audit skips the cask auditor on Linux
     # (`next [] if os == :linux` in dev-cmd/audit.rb), so the syntax job above
@@ -129,12 +160,13 @@ jobs:
     steps:
       - name: Set up Homebrew
         id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # main
+        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878  # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Audit casks
         run: |
-          tap="${{ github.repository_owner }}/$(basename "${{ github.repository }}")"
+          repository="${GITHUB_REPOSITORY#*/}"
+          tap="${GITHUB_REPOSITORY_OWNER}/${repository#homebrew-}"
           shopt -s nullglob
           rc=0
           for f in "$(brew --repository "$tap")"/Casks/*.rb; do
