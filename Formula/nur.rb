@@ -3,8 +3,8 @@ class Nur < Formula
 
   desc "Script discovery and execution engine for project task runners"
   homepage "https://github.com/hasansezertasan/nur"
-  url "https://files.pythonhosted.org/packages/53/79/a2c63711b9b6e64af3cb1366d919b6ac0eaa2f46688c67579580c2a923c8/nur-0.9.0.tar.gz"
-  sha256 "562220bad06ac2df5d32ed606a8e1db2c097f6c9b96e42086960ebf15072bc35"
+  url "https://files.pythonhosted.org/packages/dd/51/4a57760a738abf039d41671596ec0b1f1894b10cd2a713d2ba9ccf6896f7/nur-0.10.0.tar.gz"
+  sha256 "608018eb43beca190ad80473576416ccdc36e0009c66cceb475b9db9128ce18b"
   license "MIT"
 
   livecheck do
@@ -41,8 +41,8 @@ class Nur < Formula
   end
 
   resource "platformdirs" do
-    url "https://files.pythonhosted.org/packages/42/23/4a86fc741c38c5b69792a4ef954b281afa69bea9f083f881de1b0d23bc07/platformdirs-4.12.3.tar.gz"
-    sha256 "427fc0bb321ae0c5b037fa03238ca74820437be162e78b4848c4d4055b9b766c"
+    url "https://files.pythonhosted.org/packages/b7/89/dfd269de936e76319cf27787d9eaaca513491f635d49b0fbe7cdb6d3bf6f/platformdirs-4.13.4.tar.gz"
+    sha256 "dd96496961684a7f42041923f842ec7494e09f5e87aded99117e1109cd40570e"
   end
 
   resource "pygments" do
@@ -70,9 +70,29 @@ class Nur < Formula
     sha256 "3f106a9fbc73e39dd266c9712432087de78a6d644084c7c241d6a25c3169115b"
   end
 
+  resource "tree-sitter" do
+    url "https://files.pythonhosted.org/packages/f7/03/5600b84aff2e6c4fe80cfebb4063fe2f50299521befe5f6092ab8c082f4a/tree_sitter-0.26.0.tar.gz"
+    sha256 "b40c219edccc4564530c96f8f1556f6202b37cda964d1cbd7bd2b7e68b40a245"
+  end
+
+  resource "tree-sitter-javascript" do
+    url "https://files.pythonhosted.org/packages/59/e0/e63103c72a9d3dfd89a31e02e660263ad84b7438e5f44ee82e443e65bbde/tree_sitter_javascript-0.25.0.tar.gz"
+    sha256 "329b5414874f0588a98f1c291f1b28138286617aa907746ffe55adfdcf963f38"
+  end
+
+  resource "tree-sitter-make" do
+    url "https://files.pythonhosted.org/packages/b6/c9/4b534b0f8be76b5a7495419e7017998ceb1cd260ca91b4bf2358f00af97e/tree_sitter_make-1.1.1.tar.gz"
+    sha256 "ef394673ab83956dffb3986526f4c059082ff2d84c87f9da18ab30030f561b4c"
+  end
+
+  resource "tree-sitter-ruby" do
+    url "https://files.pythonhosted.org/packages/09/5b/6d24be4fde4743481bd8e3fd24b434870cb6612238c8544b71fe129ed850/tree_sitter_ruby-0.23.1.tar.gz"
+    sha256 "886ed200bfd1f3ca7628bf1c9fefd42421bbdba70c627363abda67f662caa21e"
+  end
+
   resource "typer" do
-    url "https://files.pythonhosted.org/packages/16/f7/57713ba479fd405eb76de31404b2c744c289e336b2d999511ebf51e496f7/typer-0.27.2.tar.gz"
-    sha256 "269b7eb9d3c202ca84b4bc9618cb04ebb43d3d4d1e567e4c768607232c05f945"
+    url "https://files.pythonhosted.org/packages/03/51/d33db42cc72ffd8c30777547b42d01f0cbf9d95a770457698d0174b3ed71/typer-0.27.3.tar.gz"
+    sha256 "d0396f770a560ab1b0a8504e13b5f254b728cedb05c61cf0359e944e50ce8901"
   end
 
   resource "typing-extensions" do
