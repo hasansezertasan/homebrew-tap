@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "homebrew-tap-skills": {
+      "source": {
+        "source": "github",
+        "repo": "hasansezertasan/homebrew-tap-skills"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "homebrew-tap-skills@homebrew-tap-skills": true
+  }
+}
