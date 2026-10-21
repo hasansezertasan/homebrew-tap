@@ -7,8 +7,7 @@
 __MACOSX/
 .AppleDouble
 .LSOverride
-Icon[
-]
+Icon[]
 
 # Resource forks
 ._*
@@ -29,8 +28,7 @@ Icon[
 .file
 .disk_label*
 lost+found
-.HFS+ Private Directory Data[
-]
+.HFS+ Private Directory Data[]
 
 # Directories potentially created on remote AFP share
 .AppleDB
@@ -402,7 +400,7 @@ build-iPhoneSimulator/
 
 # Used by RuboCop. Remote config files pulled in from inherit_from directive.
 # .rubocop-https?--*
-# <<< cobo:end sha256=f79be0dbe5ea8f6ff0f70819f68c041f1a3c6f7737f05f654b83eea74bcc0385 <<<
+# <<< cobo:end sha256=f74df1e4af4cf877564cea18d27dab339cfdeabd8a92222cebd9aceea4e244fb <<<
 
 # Tool configuration checked in on purpose (Ruby template ignores /.config).
 !/.config

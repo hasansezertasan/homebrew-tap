@@ -24,6 +24,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      issues: write  # open a failure issue on this tap (no PAT, GITHUB_TOKEN only)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
@@ -162,3 +163,33 @@ jobs:
             *Triggered by repository_dispatch from package repo.*
           branch: auto-update/${{ env.FORMULA }}
           delete-branch: true
+      - name: Report failure
+        # Fire-and-forget dispatch hides failures from the producer, so surface
+        # them as an issue on this tap. The owner watches the tap, so this
+        # notifies without any cross-repo PAT (GITHUB_TOKEN + issues: write).
+        # FORMULA/VERSION are read from $GITHUB_ENV (set only if validation passed).
+        # Mirrors update-cask-dispatch.yml.
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RESOLVED_VERSION: ${{ steps.check.outputs.version }}
+        run: |
+          # Prefer the version the check step resolved (livecheck) when the
+          # payload carried none.
+          VERSION="${VERSION:-$RESOLVED_VERSION}"
+          body=$(printf '%s\n' \
+            "Automated formula bump triggered by a release dispatch failed." \
+            "" \
+            "- Formula: ${FORMULA:-<unknown>}" \
+            "- Version: ${VERSION:-<from livecheck>}" \
+            "- Run: $RUN_URL" \
+            "" \
+            "The weekly update-formulas.yml cron will retry; investigate if it keeps failing.")
+          title="Formula bump failed: ${FORMULA:-<unknown>} ${VERSION}"
+          # The labels do not exist on a fresh tap, so retry without them.
+          gh issue create --title "$title" \
+            --label "automated,formula-bump-failure" --body "$body" \
+            || gh issue create --title "$title" --body "$body" \
+            || echo "::warning::could not open failure issue"
