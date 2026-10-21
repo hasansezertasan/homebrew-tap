@@ -32,7 +32,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878  # main
+        uses: Homebrew/actions/setup-homebrew@0fdc2c96a16d9f945f7e1577784302fd27a549a9  # main
       - name: Check for formula updates
         id: check
         # Read the workflow_dispatch input through env (never interpolate
@@ -111,7 +111,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878  # main
+        uses: Homebrew/actions/setup-homebrew@0fdc2c96a16d9f945f7e1577784302fd27a549a9  # main
       - name: Update formulas
         env:
           UPDATES_JSON: ${{ needs.check-updates.outputs.updates }}
