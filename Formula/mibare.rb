@@ -12,6 +12,7 @@ class Mibare < Formula
     strategy :pypi
   end
 
+  depends_on "mise"
   depends_on "python@3.14"
 
   resource "annotated-doc" do
