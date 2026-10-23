@@ -42,6 +42,7 @@ applications from GitHub releases. A package that ships as both is listed once.
 | [`cobo`](https://github.com/hasansezertasan/cobo) | Generic CLI for fetching boilerplate files from configurable git repositories ([PyPI](https://pypi.org/project/cobo/)) | Formula | Yes | PyPI |
 | [`hwid`](https://github.com/hasansezertasan/hwid) | Cross-platform hardware ID extraction using native OS detection ([PyPI](https://pypi.org/project/hwid/)) | Formula | Yes | PyPI |
 | [`keycast`](https://github.com/hasansezertasan/keycast) | Cross-platform keystroke and mouse click visualizer built in Python ([PyPI](https://pypi.org/project/keycast/)) | Formula + Cask | Formula: yes / Cask: no | PyPI + GitHub Releases |
+| [`mibare`](https://github.com/hasansezertasan/mibare) | Recommends which mise backend to install a GitHub repository with ([PyPI](https://pypi.org/project/mibare/)) | Formula | Yes | PyPI |
 | [`micoo`](https://github.com/hasansezertasan/micoo) | Easy access to mise-cookbooks ([PyPI](https://pypi.org/project/micoo/)) | Formula | Yes | PyPI |
 | [`nur`](https://github.com/hasansezertasan/nur) | Script discovery and execution engine for project task runners ([PyPI](https://pypi.org/project/nur/)) | Formula | Yes | PyPI |
 | [`ocom`](https://github.com/hasansezertasan/ocom) | Unified TUI for managing network/privacy tools: OpenVPN, SpoofDPI, WARP ([PyPI](https://pypi.org/project/ocom/)) | Formula | Yes | PyPI |
