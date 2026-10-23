@@ -76,6 +76,6 @@ hooks = [{ id = "yamlfmt", name = "YAML Formatter", args = ["-conf", ".config/.y
 [[repos]]
 repo = "https://github.com/asottile/pyupgrade"
 rev = "v3.21.2"
-# The scripts already use 3.10+ syntax (`str | None`); scripts.yml runs them
+# The scripts target Python 3.11+ (pyupgrade --py311-plus); scripts.yml runs them
 # on 3.14.
-hooks = [{ id = "pyupgrade", args = ["--py310-plus"] }]
+hooks = [{ id = "pyupgrade", args = ["--py311-plus"] }]
