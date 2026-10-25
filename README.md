@@ -157,3 +157,7 @@ them instead.
 ## License
 
 See `LICENSE`.
+
+## Credits
+
+Generated from [copier-homebrew-tap](https://github.com/hasansezertasan/copier-homebrew-tap).
