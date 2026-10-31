@@ -24,18 +24,18 @@ jobs:
       pull-requests: write
     steps:
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@ae72030040bc05e2d65c41c577092cb98bc0a27e  # main
+        uses: Homebrew/actions/setup-homebrew@c262868c096d909fc278daa87ed9772967331ea3  # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up git
-        uses: Homebrew/actions/git-user-config@ae72030040bc05e2d65c41c577092cb98bc0a27e  # main
+        uses: Homebrew/actions/git-user-config@c262868c096d909fc278daa87ed9772967331ea3  # main
       - name: Pull bottles
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PULL_REQUEST: ${{ github.event.pull_request.number }}
         run: brew pr-pull --debug --tap="$GITHUB_REPOSITORY" "$PULL_REQUEST"
       - name: Push commits
-        uses: Homebrew/actions/git-try-push@ae72030040bc05e2d65c41c577092cb98bc0a27e  # main
+        uses: Homebrew/actions/git-try-push@c262868c096d909fc278daa87ed9772967331ea3  # main
         with:
           branch: main
       - name: Delete branch
